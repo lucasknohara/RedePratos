@@ -1,10 +1,8 @@
 import {
   ArrowRight,
-  Bell,
-  Check,
-  Clock,
   Heart,
   Leaf,
+  Check
 } from 'lucide-react'
 
 function Logo() {
@@ -102,7 +100,7 @@ function Home() {
             <div className="circulo-verde"></div>
             <div className="circulo-claro"></div>
 
-            {/* AVISO FLUTUANTE */}
+            {/* PRIMEIRO AVISO */}
             <div className="aviso-flutuante aviso-um">
 
               <div className="aviso-icone">
@@ -116,86 +114,13 @@ function Home() {
 
             </div>
 
-            {/* CELULAR */}
+            {/* CELULAR COM A IMAGEM DO FIGMA */}
             <div className="celular">
-
-              <div className="notch"></div>
-
-              <div className="tela-celular">
-
-                <div className="marca-celular">
-                  <Logo />
-                  <Bell size={17} />
-                </div>
-
-                <div className="saudacao-celular">
-                  <h3>Olá!</h3>
-                  <p>Veja como estão seus alimentos.</p>
-                </div>
-
-                <div className="resumo-celular">
-                  <small>ALIMENTOS APROVEITADOS</small>
-
-                  <strong>3,2 kg</strong>
-
-                  <span>Exemplo ilustrativo</span>
-                </div>
-
-                <div className="atencao-celular">
-
-                  <Clock size={20} />
-
-                  <div>
-                    <strong>Fique de olho</strong>
-                    <small>
-                      Alimentos próximos da validade.
-                    </small>
-                  </div>
-
-                </div>
-
-                <div className="titulo-lista">
-                  <strong>Minha despensa</strong>
-                  <small>Ver todos</small>
-                </div>
-
-                {/* TOMATE */}
-                <div className="item-celular">
-
-                  <div className="mini-alimento tomate">
-                    <img src="/icons/tomate.svg" alt="Tomate" />
-                  </div>
-
-                  <div>
-                    <strong>Tomates</strong>
-                    <small>4 unidades</small>
-                  </div>
-
-                  <span className="validade hoje">
-                    Hoje
-                  </span>
-
-                </div>
-
-                {/* ARROZ */}
-                <div className="item-celular">
-
-                  <div className="mini-alimento arroz">
-                    <img src="/icons/arroz.svg" alt="arroz" />
-                  </div>
-
-                  <div>
-                    <strong>arroz</strong>
-                    <small>1 unidade</small>
-                  </div>
-
-                  <span className="validade">
-                    3 dias
-                  </span>
-
-                </div>
-
-              </div>
+              <img
+                src="../public/images/redepratos-tela.png"
+                alt="Tela inicial do aplicativo RedePratos"
+                className="imagem-celular"
+              />
             </div>
 
             {/* SEGUNDO AVISO */}
@@ -217,7 +142,6 @@ function Home() {
             </span>
 
           </div>
-
         </section>
 
         {/* BENEFÍCIOS */}
