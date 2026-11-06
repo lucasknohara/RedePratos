@@ -15,7 +15,7 @@ function DonorSidebar() {
     <aside className="donor-sidebar">
 
       <Link to="/" className="donor-logo">
-        <img src="../public/icons/logo.svg" alt="logo" />
+        <img src="/icons/logo.svg" alt="logo" />
         <span>RedePratos</span>
       </Link>
 
