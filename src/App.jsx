@@ -4,6 +4,7 @@ import Home from './pages/public/Home.jsx'
 import Dashboard from './pages/donor/Dashboard/Dashborad.jsx'
 import Pantry from './pages/donor/Pantry/Pantry.jsx'
 import NewFood from './pages/donor/NewFood/NewFood.jsx'
+import MyDonations from './pages/donor/MyDonations/MyDonations.jsx'
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
         <Route path="/inicio/alimentos" element={<Pantry />} />
 
         <Route path="/inicio/alimentos/novo" element={<NewFood />} />
+
+        <Route path="/inicio/minhas-doacoes" element={<MyDonations />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

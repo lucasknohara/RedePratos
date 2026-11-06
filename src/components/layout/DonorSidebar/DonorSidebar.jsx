@@ -46,10 +46,15 @@ function DonorSidebar() {
           Minha despensa
         </NavLink>
 
-        <Link to="/app#doacoes" className="menu-item">
+        <NavLink
+          to="/inicio/minhas-doacoes"
+          className={({ isActive }) =>
+            isActive ? 'menu-item active' : 'menu-item'
+          }
+        >
           <HeartHandshake size={19} />
           Minhas doações
-        </Link>
+        </NavLink>
 
         <Link to="/app#solicitacoes" className="menu-item">
           <ClipboardList size={19} />
