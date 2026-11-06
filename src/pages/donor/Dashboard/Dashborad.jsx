@@ -1,19 +1,14 @@
 import {
-  LayoutDashboard,
   Package,
   HeartHandshake,
-  ClipboardList,
-  TrendingUp,
   Bell,
   Plus,
   ArrowUpRight,
   Clock3,
-  Leaf,
-  CircleHelp,
-  MoreHorizontal
+  Leaf
 } from 'lucide-react'
 
-import { NavLink } from 'react-router-dom'
+import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 
 import './Dashboard.css'
 
@@ -49,71 +44,7 @@ function Dashboard() {
     <div className="donor-layout">
 
       {/* MENU LATERAL */}
-      <aside className="donor-sidebar">
-
-        <a href="/" className="donor-logo">
-          <Leaf size={27} />
-          <span>RedePratos</span>
-        </a>
-
-        <div className="sidebar-label">
-          ÁREA DO DOADOR
-        </div>
-
-        <nav className="donor-menu">
-
-          <NavLink to="/inicio" end className="menu-item">
-            <LayoutDashboard size={19} />
-            Visão geral
-          </NavLink>
-
-          <a href="#alimentos" className="menu-item">
-            <Package size={19} />
-            Minha despensa
-          </a>
-
-          <a href="#doacoes" className="menu-item">
-            <HeartHandshake size={19} />
-            Minhas doações
-          </a>
-
-          <a href="#solicitacoes" className="menu-item">
-            <ClipboardList size={19} />
-            Solicitações
-          </a>
-
-          <a href="#impacto" className="menu-item">
-            <TrendingUp size={19} />
-            Meu impacto
-          </a>
-
-        </nav>
-
-        <div className="sidebar-ajuda">
-          <CircleHelp size={19} />
-
-          <div>
-            <strong>Precisa de ajuda?</strong>
-            <small>Conheça como funciona.</small>
-          </div>
-        </div>
-
-        <div className="sidebar-perfil" id="perfil">
-
-          <div className="perfil-avatar">
-            U
-          </div>
-
-          <div className="perfil-info">
-            <strong>Usuário</strong>
-            <small>Doador</small>
-          </div>
-
-          <MoreHorizontal size={20} />
-
-        </div>
-
-      </aside>
+      <DonorSidebar />
 
       {/* CONTEÚDO PRINCIPAL */}
       <main className="donor-main">
