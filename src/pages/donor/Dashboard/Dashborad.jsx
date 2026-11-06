@@ -213,9 +213,12 @@ function Dashboard() {
                   <p>Pedidos das instituições.</p>
                 </div>
 
-                <a href="#solicitacoes">
+                <Link
+                  to="/inicio/solicitacoes"
+                  className="add-food-link"
+                >
                   <ArrowUpRight size={17} />
-                </a>
+                </Link>
 
               </div>
 
@@ -236,9 +239,12 @@ function Dashboard() {
 
               </div>
 
-              <a href="#solicitacoes" className="view-requests-link">
+              <Link
+                to="/inicio/solicitacoes"
+                className="view-requests-link"
+              >
                 Ver solicitações
-              </a>
+              </Link>
 
             </section>
 
@@ -256,10 +262,12 @@ function Dashboard() {
               <p>Acompanhe os alimentos que você disponibilizou.</p>
             </div>
 
-            <a href="#doacoes">
+            <Link 
+              to="/inicio/minhas-doacoes"
+            >
               Ver todas
               <ArrowUpRight size={16} />
-            </a>
+            </Link>
 
           </div>
 
