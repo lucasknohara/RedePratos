@@ -10,6 +10,8 @@ import {
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 
+import { Link } from 'react-router-dom'
+
 import '../Dashboard/Dashboard.css'
 
 const alimentos = [
@@ -142,10 +144,10 @@ function Dashboard() {
                 <p>Seus alimentos cadastrados.</p>
               </div>
 
-              <a href="#alimentos">
+              <Link to="/inicio/alimentos">
                 Ver todos
                 <ArrowUpRight size={16} />
-              </a>
+              </Link>
 
             </div>
 

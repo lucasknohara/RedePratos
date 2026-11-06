@@ -320,6 +320,11 @@
   cursor: not-allowed;
 }
 
+.pantry-add-button {
+  text-decoration: none;
+  cursor: pointer;
+}
+
 /* LISTA VAZIA */
 
 .pantry-empty {

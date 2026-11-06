@@ -13,6 +13,8 @@ import {
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 
+import { Link } from 'react-router-dom'
+
 import '../Dashboard/Dashborad.jsx'
 import '../Pantry/Pantry.css'
 
@@ -111,15 +113,13 @@ function Pantry() {
               </p>
             </div>
 
-            <button
-              type="button"
+            <Link
+              to="/inicio/alimentos/novo"
               className="pantry-add-button"
-              disabled
-              title="Cadastro será implementado na próxima etapa"
             >
               <Plus size={19} />
               Adicionar alimento
-            </button>
+            </Link>
 
           </section>
 

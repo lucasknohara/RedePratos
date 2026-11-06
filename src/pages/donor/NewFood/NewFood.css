@@ -1,0 +1,39 @@
+.new-food-page {
+  padding-top: 30px;
+  padding-bottom: 40px;
+}
+
+.new-food-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #688371;
+  font-size: 12px;
+  margin-bottom: 25px;
+}
+
+.new-food-back:hover {
+  color: #124638;
+}
+
+.new-food-header {
+  margin-bottom: 28px;
+}
+
+.new-food-header > div > span {
+  color: #689171;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.new-food-header h1 {
+  font-size: 29px;
+  color: #124638;
+  margin: 9px 0;
+}
+
+.new-food-header p {
+  color: #78847b;
+  font-size: 13px;
+}
