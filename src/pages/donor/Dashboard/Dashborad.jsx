@@ -81,11 +81,6 @@ function Dashboard() {
             </p>
           </div>
 
-          <a href="#alimentos" className="add-food-button">
-            <Plus size={19} />
-            Adicionar alimento
-          </a>
-
         </section>
 
         {/* INDICADORES */}
@@ -177,10 +172,13 @@ function Dashboard() {
 
             </div>
 
-            <a href="#alimentos" className="add-food-link">
+            <Link
+              to="/inicio/alimentos/novo"
+              className="add-food-link"
+            >
               <Plus size={17} />
               Adicionar alimento
-            </a>
+            </Link>
 
           </section>
 

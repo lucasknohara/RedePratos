@@ -17,7 +17,7 @@ function NewFood() {
 
         <header className="donor-topbar">
 
-          <div className="topbar-caminho">
+          <div className="topbar-breadcrumb">
             <span>RedePratos</span>
             <span>/</span>
             <Link to="/inicio/alimentos">Minha despensa</Link>
@@ -25,7 +25,7 @@ function NewFood() {
             <strong>Cadastrar alimento</strong>
           </div>
 
-          <button className="notificacao" aria-label="Notificações">
+          <button className="notification-button" aria-label="Notificações">
             <Bell size={20} />
           </button>
 

@@ -101,13 +101,13 @@ function MyDonations() {
         {/* CABEÇALHO */}
         <header className="donor-topbar">
 
-          <div className="topbar-caminho">
+          <div className="topbar-breadcrumb">
             <span>RedePratos</span>
             <span>/</span>
             <strong>Minhas doações</strong>
           </div>
 
-          <button className="notificacao" aria-label="Notificações">
+          <button className="notification-button" aria-label="Notificações">
             <Bell size={20} />
             <span></span>
           </button>
