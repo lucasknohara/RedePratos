@@ -1,8 +1,7 @@
 import {
   Package,
   CalendarDays,
-  Info,
-  Leaf
+  Info
 } from 'lucide-react'
 
 import './FoodForm.css'
@@ -151,8 +150,6 @@ function FoodForm() {
           <img src="/icons/arroz.svg" alt="Arroz" />
           <img src="/icons/leite.svg" alt="Leite" />
         </div>
-
-        <Leaf size={25} />
 
         <h3>Cuide dos seus alimentos.</h3>
 

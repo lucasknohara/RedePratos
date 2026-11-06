@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Bell, ArrowLeft } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
-import FoodForm from '../../../components/foods/FoodForm'
+import FoodForm from '../../../components/foods/FoodForm.jsx'
 
 import '../Dashboard/Dashborad.jsx'
 import './NewFood.css'

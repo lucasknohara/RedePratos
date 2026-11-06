@@ -130,7 +130,7 @@ function MyDonations() {
               </p>
             </div>
 
-            <Link to="/app/alimentos" className="donations-button">
+            <Link to="/inicio/alimentos" className="donations-button">
               <Package size={18} />
               Ver minha despensa
             </Link>
