@@ -27,7 +27,7 @@ function DonorSidebar() {
       <nav className="donor-menu">
 
         <NavLink
-          to="/app"
+          to="/inicio"
           end
           className={({ isActive }) =>
             isActive ? 'menu-item active' : 'menu-item'
@@ -38,7 +38,7 @@ function DonorSidebar() {
         </NavLink>
 
         <NavLink
-          to="/app/alimentos"
+          to="/inicio/alimentos"
           className={({ isActive }) =>
             isActive ? 'menu-item active' : 'menu-item'
           }

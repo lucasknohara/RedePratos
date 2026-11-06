@@ -10,7 +10,7 @@ import {
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 
-import './Dashboard.css'
+import '../Dashboard/Dashboard.css'
 
 const alimentos = [
   {
