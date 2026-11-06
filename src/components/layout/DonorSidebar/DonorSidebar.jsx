@@ -4,7 +4,6 @@ import {
   HeartHandshake,
   ClipboardList,
   TrendingUp,
-  Leaf,
   CircleHelp,
   MoreHorizontal
 } from 'lucide-react'
@@ -16,7 +15,7 @@ function DonorSidebar() {
     <aside className="donor-sidebar">
 
       <Link to="/" className="donor-logo">
-        <Leaf size={27} />
+        <img src="../public/icons/logo.svg" alt="logo" />
         <span>RedePratos</span>
       </Link>
 

@@ -27,6 +27,12 @@
   padding: 0 8px;
 }
 
+.donor-logo img {
+  width: 29px;
+  height: 29px;
+  object-fit: contain;
+}
+
 .sidebar-label {
   font-size: 10px;
   color: #98a39b;

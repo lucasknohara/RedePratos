@@ -8,7 +8,7 @@ import {
 function Logo() {
   return (
     <a href="/" className="logo">
-      <Leaf size={27} strokeWidth={2.5} />
+      <img src="../public/icons/logo.svg" alt="logo" />
       <span>RedePratos</span>
     </a>
   )

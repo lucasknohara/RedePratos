@@ -90,9 +90,10 @@ a {
   color: var(--verde);
 }
 
-.logo svg {
+.logo img {
   width: 29px;
   height: 29px;
+  object-fit: contain;
 }
 
 .menu {
