@@ -1,10 +1,13 @@
+
+/* LAYOUT PRINCIPAL */
+
 .donor-layout {
   display: flex;
   min-height: 100vh;
   background: #f7f6ef;
 }
 
-/* MENU */
+/* MENU LATERAL */
 
 .donor-sidebar {
   width: 255px;
@@ -136,7 +139,7 @@
   margin-top: 3px;
 }
 
-/* CONTEÚDO */
+/* CONTEÚDO PRINCIPAL */
 
 .donor-main {
   flex: 1;
@@ -152,7 +155,7 @@
   border-bottom: 1px solid #e8eae2;
 }
 
-.topbar-caminho {
+.topbar-breadcrumb {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -160,11 +163,11 @@
   color: #87938a;
 }
 
-.topbar-caminho strong {
+.topbar-breadcrumb strong {
   color: #315c43;
 }
 
-.notificacao {
+.notification-button {
   width: 40px;
   height: 40px;
   border: 1px solid #e8eae2;
@@ -177,7 +180,7 @@
   cursor: pointer;
 }
 
-.notificacao span {
+.notification-button span {
   width: 7px;
   height: 7px;
   background: #d78b42;
@@ -215,7 +218,7 @@
   font-size: 13px;
 }
 
-.cadastrar-alimento {
+.add-food-button {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -228,27 +231,27 @@
   transition: 0.2s;
 }
 
-.cadastrar-alimento:hover {
+.add-food-button:hover {
   background: #1d624d;
 }
 
 /* INDICADORES */
 
-.donor-indicadores {
+.donor-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 17px;
   margin-bottom: 25px;
 }
 
-.indicador-card {
+.stat-card {
   background: white;
   border: 1px solid #e9ebe4;
   border-radius: 12px;
   padding: 20px;
 }
 
-.indicador-topo {
+.stat-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -257,29 +260,29 @@
   font-size: 12px;
 }
 
-.indicador-topo svg {
+.stat-card-header svg {
   color: #528463;
 }
 
-.indicador-card > strong {
+.stat-card > strong {
   display: block;
   font-size: 29px;
   color: #244d39;
   margin: 15px 0 5px;
 }
 
-.indicador-card > small {
+.stat-card > small {
   color: #8c978e;
   font-size: 10px;
 }
 
-.alerta-card .indicador-topo svg {
+.warning-card .stat-card-header svg {
   color: #d39746;
 }
 
 /* PAINÉIS */
 
-.donor-conteudo {
+.donor-content {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: 18px;
@@ -293,7 +296,7 @@
   min-width: 0;
 }
 
-.panel-titulo {
+.panel-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -301,18 +304,18 @@
   margin-bottom: 20px;
 }
 
-.panel-titulo h2 {
+.panel-header h2 {
   color: #244d39;
   font-size: 16px;
 }
 
-.panel-titulo p {
+.panel-header p {
   color: #929b93;
   font-size: 11px;
   margin-top: 6px;
 }
 
-.panel-titulo > a {
+.panel-header > a {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -323,12 +326,12 @@
 
 /* ALIMENTOS */
 
-.lista-alimentos {
+.food-list {
   display: flex;
   flex-direction: column;
 }
 
-.alimento-linha {
+.food-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -336,7 +339,7 @@
   border-top: 1px solid #f0f1ec;
 }
 
-.alimento-imagem {
+.food-image {
   width: 43px;
   height: 43px;
   background: #edf2e9;
@@ -346,46 +349,46 @@
   flex-shrink: 0;
 }
 
-.alimento-imagem img {
+.food-image img {
   width: 31px;
   height: 31px;
   object-fit: contain;
 }
 
-.alimento-info {
+.food-info {
   flex: 1;
 }
 
-.alimento-info strong,
-.alimento-info small {
+.food-info strong,
+.food-info small {
   display: block;
 }
 
-.alimento-info strong {
+.food-info strong {
   font-size: 12px;
   color: #344a3c;
 }
 
-.alimento-info small {
+.food-info small {
   color: #929b93;
   font-size: 10px;
   margin-top: 5px;
 }
 
-.alimento-validade {
+.food-expiration {
   font-size: 10px;
   white-space: nowrap;
 }
 
-.alimento-validade.atencao {
+.food-expiration.attention {
   color: #c58a39;
 }
 
-.alimento-validade.normal {
+.food-expiration.normal {
   color: #59856a;
 }
 
-.adicionar-link {
+.add-food-link {
   border-top: 1px solid #f0f1ec;
   padding-top: 15px;
   display: flex;
@@ -400,13 +403,13 @@
 
 /* COLUNA LATERAL */
 
-.donor-coluna {
+.donor-side-column {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-.donor-alerta {
+.donor-warning {
   background: #fff6e8;
   border: 1px solid #f1e7d2;
   padding: 19px;
@@ -416,16 +419,16 @@
   gap: 13px;
 }
 
-.alerta-icone {
+.warning-icon {
   color: #c28a37;
 }
 
-.donor-alerta strong {
+.donor-warning strong {
   font-size: 12px;
   color: #775c31;
 }
 
-.donor-alerta p {
+.donor-warning p {
   font-size: 11px;
   line-height: 1.6;
   color: #927a53;
@@ -434,7 +437,7 @@
 
 /* SOLICITAÇÕES */
 
-.solicitacao-item {
+.request-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -442,7 +445,7 @@
   padding: 15px 0;
 }
 
-.instituicao-avatar {
+.institution-avatar {
   width: 38px;
   height: 38px;
   background: #eaf2e8;
@@ -452,28 +455,28 @@
   border-radius: 50%;
 }
 
-.solicitacao-info {
+.request-info {
   flex: 1;
   min-width: 0;
 }
 
-.solicitacao-info strong,
-.solicitacao-info small {
+.request-info strong,
+.request-info small {
   display: block;
 }
 
-.solicitacao-info strong {
+.request-info strong {
   font-size: 11px;
   color: #354b3e;
 }
 
-.solicitacao-info small {
+.request-info small {
   color: #939b94;
   font-size: 10px;
   margin-top: 5px;
 }
 
-.status-pendente {
+.status-pending {
   background: #fff1d8;
   color: #a97930;
   font-size: 9px;
@@ -482,7 +485,7 @@
   white-space: nowrap;
 }
 
-.ver-solicitacoes {
+.view-requests-link {
   display: block;
   border-top: 1px solid #f0f1ec;
   padding-top: 14px;
@@ -494,11 +497,11 @@
 
 /* DOAÇÕES */
 
-.doacoes-panel {
+.donations-panel {
   margin-top: 20px;
 }
 
-.doacao-resumo {
+.donation-summary {
   display: flex;
   align-items: center;
   gap: 13px;
@@ -507,7 +510,7 @@
   border-radius: 9px;
 }
 
-.doacao-icone {
+.donation-icon {
   width: 42px;
   height: 42px;
   display: grid;
@@ -516,32 +519,32 @@
   border-radius: 9px;
 }
 
-.doacao-icone img {
+.donation-icon img {
   width: 30px;
   height: 30px;
   object-fit: contain;
 }
 
-.doacao-info {
+.donation-info {
   flex: 1;
 }
 
-.doacao-info strong,
-.doacao-info small {
+.donation-info strong,
+.donation-info small {
   display: block;
 }
 
-.doacao-info strong {
+.donation-info strong {
   font-size: 12px;
 }
 
-.doacao-info small {
+.donation-info small {
   font-size: 10px;
   color: #929b93;
   margin-top: 5px;
 }
 
-.status-disponivel {
+.status-available {
   background: #e3f2e6;
   color: #36734a;
   padding: 7px 10px;
@@ -551,7 +554,7 @@
 
 /* IMPACTO */
 
-.impacto-doador {
+.donor-impact {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -563,24 +566,24 @@
   margin-top: 20px;
 }
 
-.impacto-doador > div {
+.donor-impact > div {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.impacto-doador h2 {
+.donor-impact h2 {
   font-size: 13px;
 }
 
-.impacto-doador p {
+.donor-impact p {
   color: #6d8373;
   font-size: 10px;
   margin-top: 5px;
   line-height: 1.5;
 }
 
-.dados-demo {
+.demo-data-note {
   text-align: right;
   margin-top: 15px;
   color: #a0a9a1;
@@ -598,7 +601,7 @@
     padding: 0 25px 30px;
   }
 
-  .donor-conteudo {
+  .donor-content {
     grid-template-columns: 1fr;
   }
 }
@@ -641,34 +644,34 @@
     flex-direction: column;
   }
 
-  .donor-indicadores {
+  .donor-stats {
     grid-template-columns: 1fr;
   }
 
-  .indicador-card {
+  .stat-card {
     padding: 16px;
   }
 }
 
 @media (max-width: 450px) {
-  .panel-titulo {
+  .panel-header {
     flex-direction: column;
   }
 
-  .alimento-linha {
+  .food-row {
     flex-wrap: wrap;
   }
 
-  .alimento-validade {
+  .food-expiration {
     margin-left: auto;
   }
 
-  .cadastrar-alimento {
+  .add-food-button {
     width: 100%;
     justify-content: center;
   }
 
-  .topbar-caminho {
+  .topbar-breadcrumb {
     font-size: 10px;
   }
 }

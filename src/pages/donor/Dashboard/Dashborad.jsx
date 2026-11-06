@@ -3,7 +3,7 @@ import {
   HeartHandshake,
   Bell,
   Plus,
-  ArrowUpRight,
+  ArrowUpRight, 
   Clock3,
   Leaf
 } from 'lucide-react'
@@ -21,7 +21,7 @@ const alimentos = [
     quantidade: '4 unidades',
     validade: 'Vence hoje',
     imagem: '/icons/tomate.svg',
-    status: 'atencao'
+    status: 'attention'
   },
   {
     id: 2,
@@ -53,13 +53,13 @@ function Dashboard() {
 
         <header className="donor-topbar">
 
-          <div className="topbar-caminho">
+          <div className="topbar-breadcrumb">
             <span>RedePratos</span>
             <span>/</span>
             <strong>Visão geral</strong>
           </div>
 
-          <button className="notificacao" aria-label="Notificações">
+          <button className="notification-button" aria-label="Notificações">
             <Bell size={20} />
             <span></span>
           </button>
@@ -81,19 +81,19 @@ function Dashboard() {
             </p>
           </div>
 
-          <a href="#alimentos" className="cadastrar-alimento">
+          <a href="#alimentos" className="add-food-button">
             <Plus size={19} />
-            Cadastrar alimento
+            Adicionar alimento
           </a>
 
         </section>
 
         {/* INDICADORES */}
-        <section className="donor-indicadores">
+        <section className="donor-stats">
 
-          <article className="indicador-card">
+          <article className="stat-card">
 
-            <div className="indicador-topo">
+            <div className="stat-card-header">
               <span>Alimentos cadastrados</span>
               <Package size={21} />
             </div>
@@ -104,9 +104,9 @@ function Dashboard() {
 
           </article>
 
-          <article className="indicador-card alerta-card">
+          <article className="stat-card warning-card">
 
-            <div className="indicador-topo">
+            <div className="stat-card-header">
               <span>Próximos da validade</span>
               <Clock3 size={21} />
             </div>
@@ -117,9 +117,9 @@ function Dashboard() {
 
           </article>
 
-          <article className="indicador-card">
+          <article className="stat-card">
 
-            <div className="indicador-topo">
+            <div className="stat-card-header">
               <span>Doações ativas</span>
               <HeartHandshake size={21} />
             </div>
@@ -132,12 +132,12 @@ function Dashboard() {
 
         </section>
 
-        <div className="donor-conteudo">
+        <div className="donor-content">
 
           {/* DESPENSA */}
-          <section className="donor-panel alimentos-panel" id="alimentos">
+          <section className="donor-panel foods-panel" id="alimentos">
 
-            <div className="panel-titulo">
+            <div className="panel-header">
 
               <div>
                 <h2>Minha despensa</h2>
@@ -151,24 +151,24 @@ function Dashboard() {
 
             </div>
 
-            <div className="lista-alimentos">
+            <div className="food-list">
 
               {alimentos.map((alimento) => (
-                <div className="alimento-linha" key={alimento.id}>
+                <div className="food-row" key={alimento.id}>
 
-                  <div className="alimento-imagem">
+                  <div className="food-image">
                     <img
                       src={alimento.imagem}
                       alt={alimento.nome}
                     />
                   </div>
 
-                  <div className="alimento-info">
+                  <div className="food-info">
                     <strong>{alimento.nome}</strong>
                     <small>{alimento.quantidade}</small>
                   </div>
 
-                  <div className={`alimento-validade ${alimento.status}`}>
+                  <div className={`food-expiration ${alimento.status}`}>
                     {alimento.validade}
                   </div>
 
@@ -177,7 +177,7 @@ function Dashboard() {
 
             </div>
 
-            <a href="#alimentos" className="adicionar-link">
+            <a href="#alimentos" className="add-food-link">
               <Plus size={17} />
               Adicionar alimento
             </a>
@@ -185,12 +185,12 @@ function Dashboard() {
           </section>
 
           {/* COLUNA LATERAL */}
-          <div className="donor-coluna">
+          <div className="donor-side-column">
 
             {/* ATENÇÃO */}
-            <section className="donor-alerta">
+            <section className="donor-warning">
 
-              <div className="alerta-icone">
+              <div className="warning-icon">
                 <Clock3 size={21} />
               </div>
 
@@ -206,9 +206,9 @@ function Dashboard() {
             </section>
 
             {/* SOLICITAÇÕES */}
-            <section className="donor-panel solicitacoes-panel" id="solicitacoes">
+            <section className="donor-panel requests-panel" id="solicitacoes">
 
-              <div className="panel-titulo">
+              <div className="panel-header">
 
                 <div>
                   <h2>Solicitações recentes</h2>
@@ -221,24 +221,24 @@ function Dashboard() {
 
               </div>
 
-              <div className="solicitacao-item">
+              <div className="request-item">
 
-                <div className="instituicao-avatar">
+                <div className="institution-avatar">
                   <HeartHandshake size={20} />
                 </div>
 
-                <div className="solicitacao-info">
+                <div className="request-info">
                   <strong>Instituição parceira</strong>
                   <small>Solicitou uma doação.</small>
                 </div>
 
-                <span className="status-pendente">
+                <span className="status-pending">
                   Pendente
                 </span>
 
               </div>
 
-              <a href="#solicitacoes" className="ver-solicitacoes">
+              <a href="#solicitacoes" className="view-requests-link">
                 Ver solicitações
               </a>
 
@@ -249,9 +249,9 @@ function Dashboard() {
         </div>
 
         {/* DOAÇÕES */}
-        <section className="donor-panel doacoes-panel" id="doacoes">
+        <section className="donor-panel donations-panel" id="doacoes">
 
-          <div className="panel-titulo">
+          <div className="panel-header">
 
             <div>
               <h2>Minhas doações</h2>
@@ -265,18 +265,18 @@ function Dashboard() {
 
           </div>
 
-          <div className="doacao-resumo">
+          <div className="donation-summary">
 
-            <div className="doacao-icone">
+            <div className="donation-icon">
               <img src="/icons/arroz.svg" alt="Arroz" />
             </div>
 
-            <div className="doacao-info">
+            <div className="donation-info">
               <strong>Arroz</strong>
               <small>2 kg disponibilizados</small>
             </div>
 
-            <span className="status-disponivel">
+            <span className="status-available">
               Disponível
             </span>
 
@@ -285,7 +285,7 @@ function Dashboard() {
         </section>
 
         {/* IMPACTO */}
-        <section className="impacto-doador" id="impacto">
+        <section className="donor-impact" id="impacto">
 
           <div>
             <Leaf size={25} />
@@ -303,7 +303,7 @@ function Dashboard() {
 
         </section>
 
-        <p className="dados-demo">
+        <p className="demo-data-note">
           Dados ilustrativos para demonstração do RedePratos.
         </p>
 
