@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom'
 
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
 import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
+import SearchInput from '../../../components/layout/SearchInput/SearchInput.jsx'
 
 const solicitacoesIniciais = [
   {
@@ -253,20 +254,12 @@ function Requests() {
             </h2>
           </div>
 
-          <div className="tw:flex tw:items-center tw:gap-3 tw:rounded-xl tw:border tw:border-[#DDE3D9] tw:bg-white tw:px-4 tw:py-3 focus-within:tw:border-[#52745B]">
-
-            <Search size={19} className="tw:shrink-0 tw:text-[#829083]" />
-
-            <input
-              type="text"
-              placeholder="Buscar por alimento ou região..."
-              value={busca}
-              onChange={(event) => setBusca(event.target.value)}
-              className="tw:w-full tw:min-w-0 tw:border-0 tw:bg-transparent tw:text-sm tw:text-[#35483A] tw:outline-none tw:ring-0 placeholder:tw:text-[#A5ADA4]"
-              aria-label="Buscar solicitações"
-            />
-
-          </div>
+          <SearchInput
+            value={busca}
+            onChange={(event) => setBusca(event.target.value)}
+            placeholder="Buscar por alimento ou região..."
+            ariaLabel="Buscar solicitações"
+          />
 
           <div className="tw:mt-5 tw:flex tw:flex-wrap tw:items-center tw:gap-2">
 

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
+import SearchInput from '../../../components/layout/SearchInput/SearchInput.jsx'
 
 const doacoesDisponiveis = [
   {
@@ -254,31 +255,13 @@ function Donations() {
           <div className="tw:grid tw:grid-cols-[1.5fr_1fr] tw:gap-3 tw:max-[600px]:grid-cols-1">
 
             {/* CAMPO DE BUSCA */}
-            <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-3 tw:rounded-xl tw:border tw:border-[#DDE3D9] tw:bg-white tw:px-4 tw:py-3 focus-within:tw:border-[#52745B]">
-
-              <Search size={19} className="tw:shrink-0 tw:text-[#829083]" />
-
-              <input
-                type="text"
-                placeholder="Buscar alimento ou região..."
-                value={busca}
-                onChange={(event) => setBusca(event.target.value)}
-                className="tw:w-full tw:min-w-0 tw:border-0 tw:bg-transparent tw:text-sm tw:text-[#35483A] tw:outline-none tw:ring-0 placeholder:tw:text-[#A5ADA4]"
-                aria-label="Buscar alimento ou região"
-              />
-
-              {busca && (
-                <button
-                  type="button"
-                  onClick={() => setBusca('')}
-                  className="tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:appearance-none tw:border-0 tw:bg-transparent tw:p-1 tw:shadow-none tw:outline-none tw:rounded-full tw:text-[#829083] tw:transition-colors tw:hover:bg-[#f0f4ef] tw:hover:text-[#315c43]"
-                  aria-label="Limpar busca"
-                >
-                  <X size={17} />
-                </button>
-              )}
-
-            </div>
+            <SearchInput
+              value={busca}
+              onChange={(event) => setBusca(event.target.value)}
+              placeholder="Buscar alimento ou região..."
+              ariaLabel="Buscar alimento ou região"
+              onClear={() => setBusca('')}
+            />
 
             {/* FILTRO POR CATEGORIA */}
             <select
