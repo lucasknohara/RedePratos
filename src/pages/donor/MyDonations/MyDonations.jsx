@@ -13,6 +13,7 @@ import {
 import { Link } from 'react-router-dom'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
+import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
 
 const doacoes = [
   {
@@ -69,30 +70,12 @@ const filtros = [
   { valor: 'concluida', nome: 'Concluídas' }
 ]
 
-const statusClasses = {
-  disponivel: 'tw:bg-[#eaf2e8] tw:text-[#477b57]',
-  pendente: 'tw:bg-[#fff1d8] tw:text-[#a97930]',
-  reservada: 'tw:bg-[#e8f0f7] tw:text-[#49738e]',
-  concluida: 'tw:bg-[#e5eee7] tw:text-[#376a47]'
-}
-
 function MyDonations() {
   const [filtro, setFiltro] = useState('todas')
 
   const doacoesFiltradas = doacoes.filter((doacao) => {
     return filtro === 'todas' || doacao.status === filtro
   })
-
-  function obterStatus(status) {
-    const nomes = {
-      disponivel: 'Disponível',
-      pendente: 'Solicitação recebida',
-      reservada: 'Reservada',
-      concluida: 'Concluída'
-    }
-
-    return nomes[status]
-  }
 
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
@@ -395,9 +378,20 @@ function MyDonations() {
 
                   {/* STATUS */}
                   <div className="tw:max-[760px]:col-start-2 tw:max-[760px]:row-start-2 tw:max-[760px]:justify-self-end">
-                    <span className={`tw:inline-block tw:w-fit tw:whitespace-nowrap tw:rounded-full tw:px-[10px] tw:py-[7px] tw:text-[9px] ${statusClasses[doacao.status]}`}>
-                      {obterStatus(doacao.status)}
-                    </span>
+                    <StatusBadge
+                      status={doacao.status}
+                      size="compact"
+                      label={
+                        doacao.status === 'pendente'
+                          ? 'Solicitação recebida'
+                          : doacao.status === 'reservada'
+                            ? 'Reservada'
+                            : undefined
+                      }
+                      variant={
+                        doacao.status === 'reservada' ? 'blue' : undefined
+                      }
+                    />
                   </div>
 
                 </article>

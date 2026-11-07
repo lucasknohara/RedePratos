@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
+import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
 
 const solicitacoesIniciais = [
   {
@@ -56,12 +57,6 @@ const filtros = [
   { valor: 'recusada', nome: 'Recusadas' }
 ]
 
-const statusClasses = {
-  pendente: 'tw:bg-[#fff1d8] tw:text-[#a97930]',
-  reservada: 'tw:bg-[#e5f1e8] tw:text-[#438358]',
-  recusada: 'tw:bg-[#f8e9e6] tw:text-[#b15e51]'
-}
-
 function Requests() {
   const [solicitacoes, setSolicitacoes] = useState(solicitacoesIniciais)
   const [filtro, setFiltro] = useState('todas')
@@ -92,16 +87,6 @@ function Requests() {
   const reservadas = solicitacoes.filter(
     (solicitacao) => solicitacao.status === 'reservada'
   ).length
-
-  function obterStatus(status) {
-    const nomes = {
-      pendente: 'Aguardando resposta',
-      reservada: 'Reserva confirmada',
-      recusada: 'Recusada'
-    }
-
-    return nomes[status]
-  }
 
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
@@ -308,9 +293,7 @@ function Requests() {
 
                     </div>
 
-                    <span className={`tw:inline-block tw:w-fit tw:whitespace-nowrap tw:rounded-full tw:px-[11px] tw:py-2 tw:text-[10px] ${statusClasses[solicitacao.status]}`}>
-                      {obterStatus(solicitacao.status)}
-                    </span>
+                      <StatusBadge status={solicitacao.status} />
 
                   </div>
 

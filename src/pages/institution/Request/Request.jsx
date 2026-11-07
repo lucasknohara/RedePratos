@@ -16,6 +16,7 @@ import {
 import { Link } from 'react-router-dom'
 
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
+import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
 
 const solicitacoesIniciais = [
   {
@@ -75,20 +76,17 @@ const statusConfig = {
   pendente: {
     label: 'Pendente',
     descricao: 'Aguardando resposta do doador.',
-    icone: Clock3,
-    estilo: 'tw:bg-[#fff1d8] tw:text-[#a97930]'
+    icone: Clock3
   },
   reservada: {
     label: 'Reserva confirmada',
     descricao: 'O doador aceitou sua solicitação.',
-    icone: CheckCircle2,
-    estilo: 'tw:bg-[#e3f2e6] tw:text-[#36734a]'
+    icone: CheckCircle2
   },
   recusada: {
     label: 'Recusada',
     descricao: 'O doador não conseguiu atender ao pedido.',
-    icone: XCircle,
-    estilo: 'tw:bg-[#fce9e7] tw:text-[#b65f57]'
+    icone: XCircle
   }
 }
 
@@ -361,10 +359,19 @@ function Requests() {
 
                       </div>
 
-                      <span className={`tw:inline-flex tw:shrink-0 tw:items-center tw:gap-1.5 tw:rounded-full tw:px-3 tw:py-2 tw:text-[10px] tw:font-semibold ${status.estilo}`}>
-                        <IconeStatus size={14} />
-                        {status.label}
-                      </span>
+                        <StatusBadge
+                          status={solicitacao.status}
+                          label={status.label}
+                          icon={IconeStatus}
+                          size="institution"
+                          variant={
+                            solicitacao.status === 'reservada'
+                              ? 'institution-reserved'
+                              : solicitacao.status === 'recusada'
+                                ? 'institution-rejected'
+                                : undefined
+                          }
+                        />
 
                     </div>
 
