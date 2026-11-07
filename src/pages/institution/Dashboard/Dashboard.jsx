@@ -3,13 +3,11 @@ import {
   Bell,
   Search,
   Package,
-  ClipboardList,
   CheckCircle2,
   Clock3,
   MapPin,
   ArrowUpRight,
-  HeartHandshake,
-  Leaf
+  HeartHandshake
 } from 'lucide-react'
 
 import { Link } from 'react-router-dom'
