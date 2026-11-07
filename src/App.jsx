@@ -10,6 +10,7 @@ import Login from './pages/public/Login/Login.jsx'
 import Cadastro from './pages/public/Cadastro/Cadastro.jsx'
 import Impact from './pages/donor/Impact/Impact.jsx'
 import Profile from './pages/donor/Profile/Profile.jsx'
+import InstitutionDashboard from './pages/institution/Dashboard/Dashboard.jsx'
 
 function App() {
   return (
@@ -34,6 +35,8 @@ function App() {
         <Route path="/doador/meu-impacto" element={<Impact />} />
 
         <Route path="/doador/perfil" element={<Profile />} />
+
+        <Route path="/instituicao" element={<InstitutionDashboard />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
