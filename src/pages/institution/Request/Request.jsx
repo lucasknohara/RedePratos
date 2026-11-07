@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom'
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
 import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
 import SearchInput from '../../../components/layout/SearchInput/SearchInput.jsx'
+import EmptyState from '../../../components/layout/EmptyState/EmptyState.jsx'
 
 const solicitacoesIniciais = [
   {
@@ -440,29 +441,13 @@ function Requests() {
           ) : (
 
             /* ESTADO VAZIO */
-            <div className="tw:flex tw:flex-col tw:items-center tw:rounded-xl tw:border tw:border-dashed tw:border-[#dce3d9] tw:bg-white tw:px-5 tw:py-12 tw:text-center">
-
-              <div className="tw:mb-4 tw:grid tw:size-[58px] tw:place-items-center tw:rounded-full tw:bg-[#edf2e9] tw:text-[#528463]">
-                <ClipboardList size={26} />
-              </div>
-
-              <h3 className="tw:text-[15px] tw:font-bold tw:text-[#315c43]">
-                Nenhuma solicitação encontrada
-              </h3>
-
-              <p className="tw:mt-2 tw:max-w-[350px] tw:text-[11px] tw:leading-[1.6] tw:text-[#929b93]">
-                Não encontramos pedidos com esses filtros. Você pode tentar outra busca ou explorar novas doações.
-              </p>
-
-              <button
-                type="button"
-                onClick={limparFiltros}
-                className="tw:mt-4 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-[#eaf2e8] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#477b57] hover:tw:bg-[#dcebd9]"
-              >
-                Limpar filtros
-              </button>
-
-            </div>
+            <EmptyState
+              icon={ClipboardList}
+              title="Nenhuma solicitação encontrada"
+              description="Não encontramos pedidos com esses filtros. Você pode tentar outra busca ou explorar novas doações."
+              actionLabel="Limpar filtros"
+              onAction={limparFiltros}
+            />
 
           )}
 

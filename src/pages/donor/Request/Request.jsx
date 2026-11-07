@@ -16,6 +16,7 @@ import {
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
+import EmptyState from '../../../components/layout/EmptyState/EmptyState.jsx'
 
 const solicitacoesIniciais = [
   {
@@ -406,20 +407,13 @@ function Requests() {
               {/* LISTA VAZIA */}
               {solicitacoesFiltradas.length === 0 && (
 
-                <div className="tw:flex tw:flex-col tw:items-center tw:gap-[10px] tw:px-[15px] tw:py-[45px] tw:text-center tw:text-[#829186]">
-
-                  <Package size={34} />
-
-                  <strong className="tw:text-[14px] tw:text-[#345742]">
-                    Nenhuma solicitação encontrada
-                  </strong>
-
-                  <p className="tw:text-[12px] tw:text-[#929b93]">
-                    Não há pedidos com esse status no momento.
-                  </p>
-
-                </div>
-
+                <EmptyState
+                  icon={Package}
+                  title="Nenhuma solicitação encontrada"
+                  description="Não há pedidos com esse status no momento."
+                  variant="donor"
+                />
+                
               )}
 
             </div>

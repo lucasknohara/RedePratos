@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
+import EmptyState from '../../../components/layout/EmptyState/EmptyState.jsx'
 
 const doacoes = [
   {
@@ -401,19 +402,13 @@ function MyDonations() {
               {/* LISTA VAZIA */}
               {doacoesFiltradas.length === 0 && (
 
-                <div className="tw:flex tw:flex-col tw:items-center tw:gap-[10px] tw:px-[15px] tw:py-[45px] tw:text-center tw:text-[#829186]">
-
-                  <Package size={32} />
-
-                  <strong className="tw:text-[14px] tw:text-[#345742]">
-                    Nenhuma doação encontrada
-                  </strong>
-
-                  <p className="tw:text-[12px]">
-                    Não há registros com esse status.
-                  </p>
-
-                </div>
+                <EmptyState
+                  icon={Package}
+                  iconSize={32}
+                  title="Nenhuma doação encontrada"
+                  description="Não há registros com esse status."
+                  variant="donor"
+                />
 
               )}
 
