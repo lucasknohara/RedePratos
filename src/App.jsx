@@ -13,6 +13,7 @@ import Profile from './pages/donor/Profile/Profile.jsx'
 import InstitutionDashboard from './pages/institution/Dashboard/Dashboard.jsx'
 import Donations from './pages/institution/Donations/Donations.jsx'
 import RequestsInstitution from './pages/institution/Request/Request.jsx'
+import InstitutionProfile from './pages/institution/Profile/Profile.jsx'
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
         <Route path="/instituicao/doacoes" element={<Donations />} />
 
         <Route path="/instituicao/solicitacoes" element={<RequestsInstitution />} />
+
+        <Route path="/instituicao/perfil" element={<InstitutionProfile />} />
 
       </Routes>
     </BrowserRouter>
