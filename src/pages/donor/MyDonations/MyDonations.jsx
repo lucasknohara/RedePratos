@@ -298,11 +298,6 @@ function MyDonations() {
               )}
 
             </div>
-
-            <div className="donations-footer">
-              Dados ilustrativos para demonstração do RedePratos.
-            </div>
-
           </section>
 
           {/* AVISO */}

@@ -367,10 +367,6 @@ function Requests() {
 
             </div>
 
-            <div className="requests-footer">
-              Dados ilustrativos para demonstração do RedePratos.
-            </div>
-
           </section>
 
           {/* INFORMAÇÃO */}
@@ -389,10 +385,6 @@ function Requests() {
             </div>
 
           </section>
-
-          <p className="requests-demo">
-            As alterações desta demonstração não são salvas após atualizar a página.
-          </p>
 
         </div>
 

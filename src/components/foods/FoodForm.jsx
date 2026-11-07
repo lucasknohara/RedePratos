@@ -18,7 +18,7 @@ function FoodForm() {
         </div>
 
         <div className="food-field">
-          <label htmlFor="nome">Nome do alimento</label>
+          <label htmlFor="nome">Nome do alimento *</label>
 
           <input
             type="text"
@@ -49,7 +49,7 @@ function FoodForm() {
         <div className="food-field-row">
 
           <div className="food-field">
-            <label htmlFor="quantidade">Quantidade</label>
+            <label htmlFor="quantidade">Quantidade *</label>
 
             <input
               type="number"
@@ -62,7 +62,7 @@ function FoodForm() {
           </div>
 
           <div className="food-field">
-            <label htmlFor="unidade">Unidade de medida</label>
+            <label htmlFor="unidade">Unidade de medida *</label>
 
             <select id="unidade" defaultValue="kg" required>
               <option value="kg">Quilograma (kg)</option>
@@ -78,7 +78,7 @@ function FoodForm() {
         </div>
 
         <div className="food-field">
-          <label htmlFor="validade">Data de validade</label>
+          <label htmlFor="validade">Data de validade *</label>
 
           <div className="food-input-icon">
             <CalendarDays size={18} />
@@ -136,8 +136,7 @@ function FoodForm() {
         </div>
 
         <p className="food-demo-note">
-          Esta é uma prévia visual. O salvamento será conectado à API
-          na etapa de desenvolvimento funcional.
+          Todos os campos com * são obrigatórios.
         </p>
 
       </form>

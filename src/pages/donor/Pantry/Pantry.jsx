@@ -315,10 +315,6 @@ function Pantry() {
 
             </div>
 
-            <div className="pantry-footer">
-              Os alimentos exibidos são dados ilustrativos.
-            </div>
-
           </section>
 
         </div>
