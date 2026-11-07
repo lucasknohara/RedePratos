@@ -6,7 +6,8 @@ import {
   ClipboardList,
   TrendingUp,
   CircleHelp,
-  MoreHorizontal
+  ArrowUpRight,
+  CircleUserRound 
 } from 'lucide-react'
 
 import { NavLink, Link } from 'react-router-dom'
@@ -119,6 +120,14 @@ function DonorSidebar() {
           Meu impacto
         </NavLink>
 
+        <NavLink
+          to="/inicio/perfil"
+          className={menuItemClass}
+        >
+          <CircleUserRound size={19} />
+          Perfil
+        </NavLink>
+
       </nav>
 
       {/* AJUDA */}
@@ -156,12 +165,12 @@ function DonorSidebar() {
           tw:rounded-full tw:bg-[#e5eee2]
           tw:font-bold tw:text-[#124638]
         ">
-          U
+          L
         </div>
 
         <div className="tw:flex-1">
           <strong className="tw:block tw:text-[12px] tw:text-[#263d32]">
-            Usuário
+            Lucas
           </strong>
 
           <small className="tw:mt-[3px] tw:block tw:text-[10px]">
@@ -169,7 +178,11 @@ function DonorSidebar() {
           </small>
         </div>
 
-        <MoreHorizontal size={20} />
+        <NavLink
+          to="/inicio/perfil"
+        >
+          <ArrowUpRight size={20} />
+        </NavLink>
 
       </div>
 

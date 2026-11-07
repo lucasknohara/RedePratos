@@ -9,6 +9,7 @@ import Requests from './pages/donor/Request/Request.jsx'
 import Login from './pages/public/Login/Login.jsx'
 import Cadastro from './pages/public/Cadastro/Cadastro.jsx'
 import Impact from './pages/donor/Impact/Impact.jsx'
+import Profile from './pages/donor/Profile/Profile.jsx'
 
 function App() {
   return (
@@ -31,6 +32,8 @@ function App() {
         <Route path="/cadastro" element={<Cadastro />} />
 
         <Route path="/inicio/meu-impacto" element={<Impact />} />
+
+        <Route path="/inicio/perfil" element={<Profile />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
