@@ -194,7 +194,7 @@ function Profile() {
             </h2>
 
             <Link
-              to="/inicio/meu-impacto"
+              to="/doador/meu-impacto"
               className="tw:flex tw:items-center tw:gap-1 tw:text-[11px] tw:font-bold tw:text-[#39845A] hover:tw:text-[#244d39]"
             >
               Ver detalhes
@@ -294,7 +294,7 @@ function Profile() {
             </h2>
 
             <Link
-              to="/inicio/meu-impacto"
+              to="/doador/meu-impacto"
               className="tw:flex tw:items-center tw:gap-1 tw:text-[11px] tw:font-bold tw:text-[#39845A] hover:tw:text-[#244d39]"
             >
               Ver todas
@@ -341,7 +341,7 @@ function Profile() {
           </h2>
 
           <Link
-            to="/inicio/minhas-doacoes"
+            to="/doador/minhas-doacoes"
             className="tw:flex tw:items-center tw:gap-3 tw:rounded-xl tw:p-3 tw:transition-colors tw:hover:bg-[#f7f9f5]"
           >
 
@@ -366,7 +366,7 @@ function Profile() {
           <div className="tw:my-2 tw:border-t tw:border-[#f0f1ec]" />
 
           <Link
-            to="/inicio/meu-impacto"
+            to="/doador/meu-impacto"
             className="tw:flex tw:items-center tw:gap-3 tw:rounded-xl tw:p-3 tw:transition-colors tw:hover:bg-[#f7f9f5]"
           >
 

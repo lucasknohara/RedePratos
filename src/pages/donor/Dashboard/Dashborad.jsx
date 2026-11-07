@@ -169,7 +169,7 @@ function Dashboard() {
               </div>
 
               <Link
-                to="/inicio/alimentos"
+                to="/doador/alimentos"
                 className="tw:flex tw:items-center tw:gap-[5px] tw:text-[11px] tw:font-bold tw:text-[#4d815e]"
               >
                 Ver todos
@@ -213,7 +213,7 @@ function Dashboard() {
             </div>
 
             <Link
-              to="/inicio/alimentos/novo"
+              to="/doador/alimentos/novo"
               className="tw:mt-[7px] tw:flex tw:items-center tw:justify-center tw:gap-[7px] tw:border-t tw:border-[#f0f1ec] tw:pt-[15px] tw:text-[12px] tw:font-bold tw:text-[#477b57]"
             >
               <Plus size={17} />
@@ -263,7 +263,7 @@ function Dashboard() {
                 </div>
 
                 <Link
-                  to="/inicio/solicitacoes"
+                  to="/doador/solicitacoes"
                   aria-label="Ver solicitações"
                   className="tw:flex tw:items-center tw:justify-center tw:gap-[7px] tw:rounded-full tw:text-[#4d815e]"
                 >
@@ -294,7 +294,7 @@ function Dashboard() {
               </div>
 
               <Link
-                to="/inicio/solicitacoes"
+                to="/doador/solicitacoes"
                 className="tw:block tw:border-t tw:border-[#f0f1ec] tw:pt-[14px] tw:text-center tw:text-[11px] tw:font-bold tw:text-[#477b57]"
               >
                 Ver solicitações
@@ -324,7 +324,7 @@ function Dashboard() {
             </div>
 
             <Link
-              to="/inicio/minhas-doacoes"
+              to="/doador/minhas-doacoes"
               className="tw:flex tw:items-center tw:gap-[5px] tw:text-[11px] tw:font-bold tw:text-[#4d815e]"
             >
               Ver todas
@@ -383,14 +383,12 @@ function Dashboard() {
           </div>
 
           <Link
-            to="/inicio/meu-impacto"
+            to="/doador/meu-impacto"
           >
 
           <ArrowUpRight size={21} className="tw:shrink-0" />
 
           </Link>
-
-          
 
         </section>
 

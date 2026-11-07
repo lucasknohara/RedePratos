@@ -80,7 +80,7 @@ function DonorSidebar() {
       ">
 
         <NavLink
-          to="/inicio"
+          to="/doador"
           end
           className={menuItemClass}
         >
@@ -89,7 +89,7 @@ function DonorSidebar() {
         </NavLink>
 
         <NavLink
-          to="/inicio/alimentos"
+          to="/doador/alimentos"
           className={menuItemClass}
         >
           <Package size={19} />
@@ -97,7 +97,7 @@ function DonorSidebar() {
         </NavLink>
 
         <NavLink
-          to="/inicio/minhas-doacoes"
+          to="/doador/minhas-doacoes"
           className={menuItemClass}
         >
           <HeartHandshake size={19} />
@@ -105,7 +105,7 @@ function DonorSidebar() {
         </NavLink>
 
         <NavLink
-          to="/inicio/solicitacoes"
+          to="/doador/solicitacoes"
           className={menuItemClass}
         >
           <ClipboardList size={19} />
@@ -113,7 +113,7 @@ function DonorSidebar() {
         </NavLink>
 
         <NavLink
-          to="/inicio/meu-impacto"
+          to="/doador/meu-impacto"
           className={menuItemClass}
         >
           <TrendingUp size={19} />
@@ -121,7 +121,7 @@ function DonorSidebar() {
         </NavLink>
 
         <NavLink
-          to="/inicio/perfil"
+          to="/doador/perfil"
           className={menuItemClass}
         >
           <CircleUserRound size={19} />
@@ -179,7 +179,7 @@ function DonorSidebar() {
         </div>
 
         <NavLink
-          to="/inicio/perfil"
+          to="/doador/perfil"
         >
           <ArrowUpRight size={20} />
         </NavLink>

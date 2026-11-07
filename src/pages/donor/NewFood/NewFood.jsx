@@ -23,7 +23,7 @@ function NewFood() {
             <span>/</span>
 
             <Link
-              to="/inicio/alimentos"
+              to="/doador/alimentos"
               className="tw:transition-colors tw:hover:text-[#124638]"
             >
               Minha despensa
@@ -50,7 +50,7 @@ function NewFood() {
 
           {/* VOLTAR */}
           <Link
-            to="/inicio/alimentos"
+            to="/doador/alimentos"
             className="tw:mb-[25px] tw:inline-flex tw:items-center tw:gap-2 tw:text-[12px] tw:text-[#688371] tw:transition-colors tw:hover:text-[#124638]"
           >
             <ArrowLeft size={17} />

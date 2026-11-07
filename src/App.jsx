@@ -17,23 +17,23 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
 
-        <Route path="/inicio" element={<Dashboard />} />
+        <Route path="/doador" element={<Dashboard />} />
 
-        <Route path="/inicio/alimentos" element={<Pantry />} />
+        <Route path="/doador/alimentos" element={<Pantry />} />
 
-        <Route path="/inicio/alimentos/novo" element={<NewFood />} />
+        <Route path="/doador/alimentos/novo" element={<NewFood />} />
 
-        <Route path="/inicio/minhas-doacoes" element={<MyDonations />} />
+        <Route path="/doador/minhas-doacoes" element={<MyDonations />} />
 
-        <Route path="/inicio/solicitacoes" element={<Requests />} />
+        <Route path="/doador/solicitacoes" element={<Requests />} />
 
         <Route path="/login" element={<Login />} />
 
         <Route path="/cadastro" element={<Cadastro />} />
 
-        <Route path="/inicio/meu-impacto" element={<Impact />} />
+        <Route path="/doador/meu-impacto" element={<Impact />} />
 
-        <Route path="/inicio/perfil" element={<Profile />} />
+        <Route path="/doador/perfil" element={<Profile />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

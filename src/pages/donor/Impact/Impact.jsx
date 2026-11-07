@@ -350,7 +350,7 @@ function Impact() {
           </div>
 
           <Link
-            to="/inicio/solicitacoes"
+            to="/doador/solicitacoes"
             aria-label="Ver meus alimentos"
           >
             <ArrowUpRight size={21} />

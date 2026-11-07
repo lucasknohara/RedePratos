@@ -121,7 +121,7 @@ function Pantry() {
             </div>
 
             <Link
-              to="/inicio/alimentos/novo"
+              to="/doador/alimentos/novo"
               className="tw:flex tw:items-center tw:gap-[9px] tw:rounded-lg tw:bg-[#124638] tw:px-[17px] tw:py-[13px] tw:text-[12px] tw:font-bold tw:text-white tw:transition-colors tw:hover:bg-[#1d624d] tw:max-[760px]:w-full tw:max-[760px]:justify-center"
             >
               <Plus size={19} />
