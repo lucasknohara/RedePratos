@@ -1,4 +1,3 @@
-
 import {
   Package,
   HeartHandshake,
@@ -10,6 +9,7 @@ import {
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 import PageHeader from '../../../components/layout/PageHeader/PageHeader.jsx'
+import StatCard from '../../../components/layout/StatCard/StatCard.jsx'
 
 import { Link } from 'react-router-dom'
 
@@ -76,59 +76,33 @@ function Dashboard() {
 
         </section>
 
+
         {/* INDICADORES */}
         <section className="tw:mb-[25px] tw:grid tw:grid-cols-3 tw:gap-[17px] tw:max-[760px]:grid-cols-1">
 
-          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
+          <StatCard
+            title="Alimentos cadastrados"
+            value="08"
+            description="Na sua despensa"
+            icon={Package}
+            iconColor="tw:text-[#528463]"
+          />
 
-            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
-              <span>Alimentos cadastrados</span>
-              <Package size={21} className="tw:text-[#528463]" />
-            </div>
+          <StatCard
+            title="Próximos da validade"
+            value="02"
+            description="Precisam da sua atenção"
+            icon={Clock3}
+            iconColor="tw:text-[#d39746]"
+          />
 
-            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              08
-            </strong>
-
-            <small className="tw:text-[10px] tw:text-[#8c978e]">
-              Na sua despensa
-            </small>
-
-          </article>
-
-          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
-
-            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
-              <span>Próximos da validade</span>
-              <Clock3 size={21} className="tw:text-[#d39746]" />
-            </div>
-
-            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              02
-            </strong>
-
-            <small className="tw:text-[10px] tw:text-[#8c978e]">
-              Precisam da sua atenção
-            </small>
-
-          </article>
-
-          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
-
-            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
-              <span>Doações ativas</span>
-              <HeartHandshake size={21} className="tw:text-[#528463]" />
-            </div>
-
-            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              03
-            </strong>
-
-            <small className="tw:text-[10px] tw:text-[#8c978e]">
-              Alimentos disponibilizados
-            </small>
-
-          </article>
+          <StatCard
+            title="Doações ativas"
+            value="03"
+            description="Alimentos disponibilizados"
+            icon={HeartHandshake}
+            iconColor="tw:text-[#528463]"
+          />
 
         </section>
 

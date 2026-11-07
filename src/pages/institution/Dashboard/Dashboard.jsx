@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
 import PageHeader from '../../../components/layout/PageHeader/PageHeader.jsx'
+import StatCard from '../../../components/layout/StatCard/StatCard.jsx'
 
 const doacoes = [
   {
@@ -102,56 +103,29 @@ function InstitutionDashboard() {
         {/* INDICADORES */}
         <section className="tw:mb-[25px] tw:grid tw:grid-cols-3 tw:gap-[17px] tw:max-[760px]:grid-cols-1">
 
-          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
+          <StatCard
+            title="Doações disponíveis"
+            value="08"
+            description="Alimentos para solicitar"
+            icon={Package}
+            iconColor="tw:text-[#528463]"
+          />
 
-            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
-              <span>Doações disponíveis</span>
-              <Package size={21} className="tw:text-[#528463]" />
-            </div>
+          <StatCard
+            title="Solicitações em análise"
+            value="03"
+            description="Aguardando retorno dos doadores"
+            icon={Clock3}
+            iconColor="tw:text-[#d39746]"
+          />
 
-            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              08
-            </strong>
-
-            <small className="tw:text-[10px] tw:text-[#8c978e]">
-              Alimentos para solicitar
-            </small>
-
-          </article>
-
-          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
-
-            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
-              <span>Solicitações em análise</span>
-              <Clock3 size={21} className="tw:text-[#d39746]" />
-            </div>
-
-            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              03
-            </strong>
-
-            <small className="tw:text-[10px] tw:text-[#8c978e]">
-              Aguardando retorno dos doadores
-            </small>
-
-          </article>
-
-          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
-
-            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
-              <span>Reservas confirmadas</span>
-              <CheckCircle2 size={21} className="tw:text-[#528463]" />
-            </div>
-
-            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              02
-            </strong>
-
-            <small className="tw:text-[10px] tw:text-[#8c978e]">
-              Solicitações aprovadas
-            </small>
-
-          </article>
+          <StatCard
+            title="Reservas confirmadas"
+            value="02"
+            description="Solicitações aprovadas"
+            icon={CheckCircle2}
+            iconColor="tw:text-[#528463]"
+          />
 
         </section>
 
