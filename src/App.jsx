@@ -7,6 +7,7 @@ import NewFood from './pages/donor/NewFood/NewFood.jsx'
 import MyDonations from './pages/donor/MyDonations/MyDonations.jsx'
 import Requests from './pages/donor/Request/Request.jsx'
 import Login from './pages/public/Login/Login.jsx'
+import Cadastro from './pages/public/Cadastro/Cadastro.jsx'
 
 function App() {
   return (
@@ -25,6 +26,8 @@ function App() {
         <Route path="/inicio/solicitacoes" element={<Requests />} />
 
         <Route path="/login" element={<Login />} />
+
+        <Route path="/cadastro" element={<Cadastro />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
