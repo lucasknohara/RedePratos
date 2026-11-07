@@ -94,10 +94,6 @@ function Requests() {
     (solicitacao) => solicitacao.status === 'reservada'
   ).length
 
-  const recusadas = solicitacoes.filter(
-    (solicitacao) => solicitacao.status === 'recusada'
-  ).length
-
   function obterStatus(status) {
     const nomes = {
       pendente: 'Aguardando resposta',
