@@ -1,6 +1,4 @@
-
 import {
-  Bell,
   Search,
   Package,
   CheckCircle2,
@@ -13,6 +11,7 @@ import {
 import { Link } from 'react-router-dom'
 
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
+import PageHeader from '../../../components/layout/PageHeader/PageHeader.jsx'
 
 const doacoes = [
   {
@@ -79,26 +78,7 @@ function InstitutionDashboard() {
       <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
         {/* CABEÇALHO */}
-        <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
-
-          <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
-            <span>RedePratos</span>
-            <span>/</span>
-            <strong className="tw:text-[#315c43]">
-              Visão geral
-            </strong>
-          </div>
-
-          <button
-            type="button"
-            className="tw:relative tw:grid tw:size-10 tw:cursor-pointer tw:place-items-center tw:rounded-full tw:border tw:border-[#e8eae2] tw:bg-white tw:text-[#315c43]"
-            aria-label="Notificações"
-          >
-            <Bell size={20} />
-            <span className="tw:absolute tw:top-2 tw:right-[9px] tw:size-[7px] tw:rounded-full tw:bg-[#d78b42]" />
-          </button>
-
-        </header>
+        <PageHeader currentPage="Visão geral" />
 
         {/* BOAS-VINDAS */}
         <section className="tw:flex tw:items-center tw:justify-between tw:gap-5 tw:py-[35px] tw:max-[760px]:flex-col tw:max-[760px]:items-start">
