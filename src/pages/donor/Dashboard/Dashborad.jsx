@@ -1,9 +1,10 @@
+
 import {
   Package,
   HeartHandshake,
   Bell,
   Plus,
-  ArrowUpRight, 
+  ArrowUpRight,
   Clock3,
   Leaf
 } from 'lucide-react'
@@ -11,8 +12,6 @@ import {
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 
 import { Link } from 'react-router-dom'
-
-import '../Dashboard/Dashboard.css'
 
 const alimentos = [
   {
@@ -41,42 +40,52 @@ const alimentos = [
   }
 ]
 
+const classesValidade = {
+  attention: 'tw:text-[#c58a39]',
+  normal: 'tw:text-[#59856a]'
+}
+
 function Dashboard() {
   return (
-    <div className="donor-layout">
+    <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
 
       {/* MENU LATERAL */}
       <DonorSidebar />
 
       {/* CONTEÚDO PRINCIPAL */}
-      <main className="donor-main">
+      <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
-        <header className="donor-topbar">
+        <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
 
-          <div className="topbar-breadcrumb">
+          <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
             <span>RedePratos</span>
             <span>/</span>
-            <strong>Visão geral</strong>
+            <strong className="tw:text-[#315c43]">Visão geral</strong>
           </div>
 
-          <button className="notification-button" aria-label="Notificações">
+          <button
+            className="tw:relative tw:grid tw:size-10 tw:cursor-pointer tw:place-items-center tw:rounded-full tw:border tw:border-[#e8eae2] tw:bg-white tw:text-[#315c43]"
+            aria-label="Notificações"
+          >
             <Bell size={20} />
-            <span></span>
+            <span className="tw:absolute tw:top-2 tw:right-[9px] tw:size-[7px] tw:rounded-full tw:bg-[#d78b42]"></span>
           </button>
 
         </header>
 
         {/* BOAS-VINDAS */}
-        <section className="donor-welcome">
+        <section className="tw:flex tw:items-center tw:justify-between tw:gap-5 tw:py-[35px] tw:max-[760px]:flex-col tw:max-[760px]:items-start">
 
           <div>
-            <span className="welcome-label">
+            <span className="tw:text-[10px] tw:font-bold tw:tracking-[1px] tw:text-[#689171]">
               SEU ESPAÇO NO REDEPRATOS
             </span>
 
-            <h1>Olá, bem-vindo!</h1>
+            <h1 className="tw:my-[9px] tw:text-[30px] tw:font-bold tw:tracking-[-0.7px] tw:text-[#124638]">
+              Olá, bem-vindo!
+            </h1>
 
-            <p>
+            <p className="tw:text-[13px] tw:text-[#78847b]">
               Veja como estão seus alimentos e acompanhe suas doações.
             </p>
           </div>
@@ -84,86 +93,117 @@ function Dashboard() {
         </section>
 
         {/* INDICADORES */}
-        <section className="donor-stats">
+        <section className="tw:mb-[25px] tw:grid tw:grid-cols-3 tw:gap-[17px] tw:max-[760px]:grid-cols-1">
 
-          <article className="stat-card">
+          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
 
-            <div className="stat-card-header">
+            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
               <span>Alimentos cadastrados</span>
-              <Package size={21} />
+              <Package size={21} className="tw:text-[#528463]" />
             </div>
 
-            <strong>08</strong>
+            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
+              08
+            </strong>
 
-            <small>Na sua despensa</small>
+            <small className="tw:text-[10px] tw:text-[#8c978e]">
+              Na sua despensa
+            </small>
 
           </article>
 
-          <article className="stat-card warning-card">
+          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
 
-            <div className="stat-card-header">
+            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
               <span>Próximos da validade</span>
-              <Clock3 size={21} />
+              <Clock3 size={21} className="tw:text-[#d39746]" />
             </div>
 
-            <strong>02</strong>
+            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
+              02
+            </strong>
 
-            <small>Precisam da sua atenção</small>
+            <small className="tw:text-[10px] tw:text-[#8c978e]">
+              Precisam da sua atenção
+            </small>
 
           </article>
 
-          <article className="stat-card">
+          <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
 
-            <div className="stat-card-header">
+            <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
               <span>Doações ativas</span>
-              <HeartHandshake size={21} />
+              <HeartHandshake size={21} className="tw:text-[#528463]" />
             </div>
 
-            <strong>03</strong>
+            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
+              03
+            </strong>
 
-            <small>Alimentos disponibilizados</small>
+            <small className="tw:text-[10px] tw:text-[#8c978e]">
+              Alimentos disponibilizados
+            </small>
 
           </article>
 
         </section>
 
-        <div className="donor-content">
+        {/* PAINÉIS PRINCIPAIS */}
+        <div className="tw:grid tw:grid-cols-[1.4fr_1fr] tw:gap-[18px] tw:max-[1100px]:grid-cols-1">
 
           {/* DESPENSA */}
-          <section className="donor-panel foods-panel" id="alimentos">
+          <section
+            className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-[23px]"
+            id="alimentos"
+          >
 
-            <div className="panel-header">
+            <div className="tw:mb-5 tw:flex tw:items-start tw:justify-between tw:gap-[10px] tw:max-[450px]:flex-col">
 
               <div>
-                <h2>Minha despensa</h2>
-                <p>Seus alimentos cadastrados.</p>
+                <h2 className="tw:text-[16px] tw:font-bold tw:text-[#244d39]">
+                  Minha despensa
+                </h2>
+                <p className="tw:mt-[6px] tw:text-[11px] tw:text-[#929b93]">
+                  Seus alimentos cadastrados.
+                </p>
               </div>
 
-              <Link to="/inicio/alimentos">
+              <Link
+                to="/inicio/alimentos"
+                className="tw:flex tw:items-center tw:gap-[5px] tw:text-[11px] tw:font-bold tw:text-[#4d815e]"
+              >
                 Ver todos
                 <ArrowUpRight size={16} />
               </Link>
 
             </div>
 
-            <div className="food-list">
+            <div className="tw:flex tw:flex-col">
 
               {alimentos.map((alimento) => (
-                <div className="food-row" key={alimento.id}>
+                <div
+                  className="tw:flex tw:items-center tw:gap-3 tw:border-t tw:border-[#f0f1ec] tw:py-[14px] tw:max-[450px]:flex-wrap"
+                  key={alimento.id}
+                >
 
-                  <div className="food-image">
+                  <div className="tw:grid tw:size-[43px] tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#edf2e9]">
                     <img
                       src={alimento.imagem}
                       alt={alimento.nome}
+                      className="tw:size-[31px] tw:object-contain"
                     />
                   </div>
 
-                  <div className="food-info">
-                    <strong>{alimento.nome}</strong>
-                    <small>{alimento.quantidade}</small>
+                  <div className="tw:min-w-0 tw:flex-1">
+                    <strong className="tw:block tw:text-[12px] tw:text-[#344a3c]">
+                      {alimento.nome}
+                    </strong>
+                    <small className="tw:mt-[5px] tw:block tw:text-[10px] tw:text-[#929b93]">
+                      {alimento.quantidade}
+                    </small>
                   </div>
 
-                  <div className={`food-expiration ${alimento.status}`}>
+                  <div className={`tw:whitespace-nowrap tw:text-[10px] tw:max-[450px]:ml-auto ${classesValidade[alimento.status]}`}>
                     {alimento.validade}
                   </div>
 
@@ -174,7 +214,7 @@ function Dashboard() {
 
             <Link
               to="/inicio/alimentos/novo"
-              className="add-food-link"
+              className="tw:mt-[7px] tw:flex tw:items-center tw:justify-center tw:gap-[7px] tw:border-t tw:border-[#f0f1ec] tw:pt-[15px] tw:text-[12px] tw:font-bold tw:text-[#477b57]"
             >
               <Plus size={17} />
               Adicionar alimento
@@ -183,19 +223,21 @@ function Dashboard() {
           </section>
 
           {/* COLUNA LATERAL */}
-          <div className="donor-side-column">
+          <div className="tw:flex tw:flex-col tw:gap-[18px]">
 
             {/* ATENÇÃO */}
-            <section className="donor-warning">
+            <section className="tw:flex tw:items-start tw:gap-[13px] tw:rounded-xl tw:border tw:border-[#f1e7d2] tw:bg-[#fff6e8] tw:p-[19px]">
 
-              <div className="warning-icon">
+              <div className="tw:text-[#c28a37]">
                 <Clock3 size={21} />
               </div>
 
               <div>
-                <strong>Fique de olho na validade!</strong>
+                <strong className="tw:text-[12px] tw:text-[#775c31]">
+                  Fique de olho na validade!
+                </strong>
 
-                <p>
+                <p className="tw:mt-[7px] tw:text-[11px] tw:leading-[1.6] tw:text-[#927a53]">
                   Alguns alimentos estão próximos do vencimento.
                   Aproveite antes que estraguem.
                 </p>
@@ -204,36 +246,48 @@ function Dashboard() {
             </section>
 
             {/* SOLICITAÇÕES */}
-            <section className="donor-panel requests-panel" id="solicitacoes">
+            <section
+              className="tw:min-w-0 tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-[23px]"
+              id="solicitacoes"
+            >
 
-              <div className="panel-header">
+              <div className="tw:mb-5 tw:flex tw:items-start tw:justify-between tw:gap-[10px] tw:max-[450px]:flex-col">
 
                 <div>
-                  <h2>Solicitações recentes</h2>
-                  <p>Pedidos das instituições.</p>
+                  <h2 className="tw:text-[16px] tw:font-bold tw:text-[#244d39]">
+                    Solicitações recentes
+                  </h2>
+                  <p className="tw:mt-[6px] tw:text-[11px] tw:text-[#929b93]">
+                    Pedidos das instituições.
+                  </p>
                 </div>
 
                 <Link
                   to="/inicio/solicitacoes"
-                  className="add-food-link"
+                  aria-label="Ver solicitações"
+                  className="tw:flex tw:items-center tw:justify-center tw:gap-[7px] tw:rounded-full tw:text-[#4d815e]"
                 >
                   <ArrowUpRight size={17} />
                 </Link>
 
               </div>
 
-              <div className="request-item">
+              <div className="tw:flex tw:items-center tw:gap-[10px] tw:border-t tw:border-[#f0f1ec] tw:py-[15px]">
 
-                <div className="institution-avatar">
+                <div className="tw:grid tw:size-[38px] tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-[#eaf2e8] tw:text-[#477b57]">
                   <HeartHandshake size={20} />
                 </div>
 
-                <div className="request-info">
-                  <strong>Instituição parceira</strong>
-                  <small>Solicitou uma doação.</small>
+                <div className="tw:min-w-0 tw:flex-1">
+                  <strong className="tw:block tw:text-[11px] tw:text-[#354b3e]">
+                    Instituição parceira
+                  </strong>
+                  <small className="tw:mt-[5px] tw:block tw:text-[10px] tw:text-[#939b94]">
+                    Solicitou uma doação.
+                  </small>
                 </div>
 
-                <span className="status-pending">
+                <span className="tw:whitespace-nowrap tw:rounded-full tw:bg-[#fff1d8] tw:px-2 tw:py-1.5 tw:text-[9px] tw:text-[#a97930]">
                   Pendente
                 </span>
 
@@ -241,7 +295,7 @@ function Dashboard() {
 
               <Link
                 to="/inicio/solicitacoes"
-                className="view-requests-link"
+                className="tw:block tw:border-t tw:border-[#f0f1ec] tw:pt-[14px] tw:text-center tw:text-[11px] tw:font-bold tw:text-[#477b57]"
               >
                 Ver solicitações
               </Link>
@@ -253,17 +307,25 @@ function Dashboard() {
         </div>
 
         {/* DOAÇÕES */}
-        <section className="donor-panel donations-panel" id="doacoes">
+        <section
+          className="tw:mt-5 tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-[23px]"
+          id="doacoes"
+        >
 
-          <div className="panel-header">
+          <div className="tw:mb-5 tw:flex tw:items-start tw:justify-between tw:gap-[10px] tw:max-[450px]:flex-col">
 
             <div>
-              <h2>Minhas doações</h2>
-              <p>Acompanhe os alimentos que você disponibilizou.</p>
+              <h2 className="tw:text-[16px] tw:font-bold tw:text-[#244d39]">
+                Minhas doações
+              </h2>
+              <p className="tw:mt-[6px] tw:text-[11px] tw:text-[#929b93]">
+                Acompanhe os alimentos que você disponibilizou.
+              </p>
             </div>
 
-            <Link 
+            <Link
               to="/inicio/minhas-doacoes"
+              className="tw:flex tw:items-center tw:gap-[5px] tw:text-[11px] tw:font-bold tw:text-[#4d815e]"
             >
               Ver todas
               <ArrowUpRight size={16} />
@@ -271,18 +333,26 @@ function Dashboard() {
 
           </div>
 
-          <div className="donation-summary">
+          <div className="tw:flex tw:items-center tw:gap-[13px] tw:rounded-[9px] tw:bg-[#f8f9f5] tw:p-[13px]">
 
-            <div className="donation-icon">
-              <img src="/icons/arroz.svg" alt="Arroz" />
+            <div className="tw:grid tw:size-[42px] tw:shrink-0 tw:place-items-center tw:rounded-[9px] tw:bg-[#eaf1e7]">
+              <img
+                src="/icons/arroz.svg"
+                alt="Arroz"
+                className="tw:size-[30px] tw:object-contain"
+              />
             </div>
 
-            <div className="donation-info">
-              <strong>Arroz</strong>
-              <small>2 kg disponibilizados</small>
+            <div className="tw:min-w-0 tw:flex-1">
+              <strong className="tw:block tw:text-[12px]">
+                Arroz
+              </strong>
+              <small className="tw:mt-[5px] tw:block tw:text-[10px] tw:text-[#929b93]">
+                2 kg disponibilizados
+              </small>
             </div>
 
-            <span className="status-available">
+            <span className="tw:rounded-full tw:bg-[#e3f2e6] tw:px-[10px] tw:py-[7px] tw:text-[10px] tw:text-[#36734a]">
               Disponível
             </span>
 
@@ -291,27 +361,30 @@ function Dashboard() {
         </section>
 
         {/* IMPACTO */}
-        <section className="donor-impact" id="impacto">
+        <section
+          className="tw:mt-5 tw:flex tw:items-center tw:justify-between tw:gap-[15px] tw:rounded-xl tw:bg-[#e8f0e5] tw:p-[21px] tw:text-[#315c43]"
+          id="impacto"
+        >
 
-          <div>
-            <Leaf size={25} />
+          <div className="tw:flex tw:items-center tw:gap-[14px]">
+
+            <Leaf size={25} className="tw:shrink-0" />
 
             <div>
-              <h2>Seu impacto começa com pequenas ações.</h2>
-              <p>
+              <h2 className="tw:text-[13px] tw:font-bold">
+                Seu impacto começa com pequenas ações.
+              </h2>
+              <p className="tw:mt-[5px] tw:text-[10px] tw:leading-[1.5] tw:text-[#6d8373]">
                 Continue aproveitando seus alimentos e contribuindo
                 para reduzir o desperdício.
               </p>
             </div>
+
           </div>
 
-          <ArrowUpRight size={21} />
+          <ArrowUpRight size={21} className="tw:shrink-0" />
 
         </section>
-
-        <p className="demo-data-note">
-          Dados ilustrativos para demonstração do RedePratos.
-        </p>
 
       </main>
     </div>

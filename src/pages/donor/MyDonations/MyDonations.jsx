@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 
 import {
@@ -14,10 +15,6 @@ import { Link } from 'react-router-dom'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 
-import '../Dashboard/Dashborad.jsx'
-import './MyDonations.css'
-
-// Dados de exemplo para a tela
 const doacoes = [
   {
     id: 1,
@@ -73,6 +70,13 @@ const filtros = [
   { valor: 'concluida', nome: 'Concluídas' }
 ]
 
+const statusClasses = {
+  disponivel: 'tw:bg-[#eaf2e8] tw:text-[#477b57]',
+  pendente: 'tw:bg-[#fff1d8] tw:text-[#a97930]',
+  reservada: 'tw:bg-[#e8f0f7] tw:text-[#49738e]',
+  concluida: 'tw:bg-[#e5eee7] tw:text-[#376a47]'
+}
+
 function MyDonations() {
   const [filtro, setFiltro] = useState('todas')
 
@@ -92,45 +96,59 @@ function MyDonations() {
   }
 
   return (
-    <div className="donor-layout">
+    <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
 
+      {/* MENU LATERAL */}
       <DonorSidebar />
 
-      <main className="donor-main">
+      {/* CONTEÚDO PRINCIPAL */}
+      <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
         {/* CABEÇALHO */}
-        <header className="donor-topbar">
+        <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
 
-          <div className="topbar-breadcrumb">
+          <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
             <span>RedePratos</span>
             <span>/</span>
-            <strong>Minhas doações</strong>
+            <strong className="tw:text-[#315c43]">
+              Minhas doações
+            </strong>
           </div>
 
-          <button className="notification-button" aria-label="Notificações">
+          <button
+            className="tw:relative tw:grid tw:size-10 tw:cursor-pointer tw:place-items-center tw:rounded-full tw:border tw:border-[#e8eae2] tw:bg-white tw:text-[#315c43]"
+            aria-label="Notificações"
+          >
             <Bell size={20} />
-            <span></span>
+            <span className="tw:absolute tw:top-2 tw:right-[9px] tw:size-[7px] tw:rounded-full tw:bg-[#d78b42]"></span>
           </button>
 
         </header>
 
-        <div className="donations-page">
+        <div className="tw:pt-[35px] tw:pb-10">
 
           {/* TÍTULO */}
-          <section className="donations-header">
+          <section className="tw:mb-7 tw:flex tw:items-center tw:justify-between tw:gap-5 tw:max-[760px]:items-start tw:max-[760px]:flex-col">
 
             <div>
-              <span>COMPARTILHE E TRANSFORME</span>
+              <span className="tw:text-[10px] tw:font-bold tw:tracking-[1px] tw:text-[#689171]">
+                COMPARTILHE E TRANSFORME
+              </span>
 
-              <h1>Minhas doações</h1>
+              <h1 className="tw:my-[9px] tw:text-[29px] tw:font-bold tw:tracking-[-0.7px] tw:text-[#124638]">
+                Minhas doações
+              </h1>
 
-              <p>
+              <p className="tw:text-[13px] tw:leading-[1.6] tw:text-[#78847b]">
                 Acompanhe os alimentos que você disponibilizou
                 para ajudar outras pessoas.
               </p>
             </div>
 
-            <Link to="/inicio/alimentos" className="donations-button">
+            <Link
+              to="/inicio/alimentos"
+              className="tw:flex tw:items-center tw:gap-[9px] tw:whitespace-nowrap tw:rounded-lg tw:bg-[#124638] tw:px-[17px] tw:py-[13px] tw:text-[12px] tw:font-bold tw:text-white tw:transition-colors tw:hover:bg-[#1d624d] tw:max-[760px]:w-full tw:max-[760px]:justify-center"
+            >
               <Package size={18} />
               Ver minha despensa
             </Link>
@@ -138,91 +156,141 @@ function MyDonations() {
           </section>
 
           {/* RESUMO */}
-          <section className="donations-summary">
+          <section className="tw:mb-[25px] tw:grid tw:grid-cols-4 tw:gap-[13px] tw:max-[1100px]:grid-cols-2 tw:max-[400px]:grid-cols-1">
 
-            <article className="donation-summary-card">
-              <div className="donation-summary-icon">
+            {/* TOTAL */}
+            <article className="tw:flex tw:min-w-0 tw:items-center tw:gap-3 tw:rounded-[11px] tw:border tw:border-[#e9ebe4] tw:bg-white tw:px-[14px] tw:py-[17px]">
+
+              <div className="tw:grid tw:size-10 tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#eaf2e8] tw:text-[#477b57]">
                 <HeartHandshake size={21} />
               </div>
 
               <div>
-                <span>Total de doações</span>
-                <strong>{doacoes.length}</strong>
-                <small>Ofertas cadastradas</small>
+                <span className="tw:block tw:text-[10px] tw:text-[#78847b]">
+                  Total de doações
+                </span>
+
+                <strong className="tw:my-[5px] tw:block tw:text-[23px] tw:text-[#244d39]">
+                  {doacoes.length}
+                </strong>
+
+                <small className="tw:block tw:text-[9px] tw:text-[#9aa29b]">
+                  Ofertas cadastradas
+                </small>
               </div>
+
             </article>
 
-            <article className="donation-summary-card">
-              <div className="donation-summary-icon">
+            {/* DISPONÍVEIS */}
+            <article className="tw:flex tw:min-w-0 tw:items-center tw:gap-3 tw:rounded-[11px] tw:border tw:border-[#e9ebe4] tw:bg-white tw:px-[14px] tw:py-[17px]">
+
+              <div className="tw:grid tw:size-10 tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#eaf2e8] tw:text-[#477b57]">
                 <Package size={21} />
               </div>
 
               <div>
-                <span>Disponíveis</span>
-                <strong>
+                <span className="tw:block tw:text-[10px] tw:text-[#78847b]">
+                  Disponíveis
+                </span>
+
+                <strong className="tw:my-[5px] tw:block tw:text-[23px] tw:text-[#244d39]">
                   {doacoes.filter(d => d.status === 'disponivel').length}
                 </strong>
-                <small>Aguardando instituições</small>
+
+                <small className="tw:block tw:text-[9px] tw:text-[#9aa29b]">
+                  Aguardando instituições
+                </small>
               </div>
+
             </article>
 
-            <article className="donation-summary-card">
-              <div className="donation-summary-icon summary-pending">
+            {/* PENDENTES */}
+            <article className="tw:flex tw:min-w-0 tw:items-center tw:gap-3 tw:rounded-[11px] tw:border tw:border-[#e9ebe4] tw:bg-white tw:px-[14px] tw:py-[17px]">
+
+              <div className="tw:grid tw:size-10 tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#fff1d8] tw:text-[#c28a37]">
                 <Clock3 size={21} />
               </div>
 
               <div>
-                <span>Solicitações pendentes</span>
-                <strong>
+                <span className="tw:block tw:text-[10px] tw:text-[#78847b]">
+                  Solicitações pendentes
+                </span>
+
+                <strong className="tw:my-[5px] tw:block tw:text-[23px] tw:text-[#244d39]">
                   {doacoes.filter(d => d.status === 'pendente').length}
                 </strong>
-                <small>Precisam da sua resposta</small>
+
+                <small className="tw:block tw:text-[9px] tw:text-[#9aa29b]">
+                  Precisam da sua resposta
+                </small>
               </div>
+
             </article>
 
-            <article className="donation-summary-card">
-              <div className="donation-summary-icon">
+            {/* CONCLUÍDAS */}
+            <article className="tw:flex tw:min-w-0 tw:items-center tw:gap-3 tw:rounded-[11px] tw:border tw:border-[#e9ebe4] tw:bg-white tw:px-[14px] tw:py-[17px]">
+
+              <div className="tw:grid tw:size-10 tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#eaf2e8] tw:text-[#477b57]">
                 <CheckCircle size={21} />
               </div>
 
               <div>
-                <span>Concluídas</span>
-                <strong>
+                <span className="tw:block tw:text-[10px] tw:text-[#78847b]">
+                  Concluídas
+                </span>
+
+                <strong className="tw:my-[5px] tw:block tw:text-[23px] tw:text-[#244d39]">
                   {doacoes.filter(d => d.status === 'concluida').length}
                 </strong>
-                <small>Entregas finalizadas</small>
+
+                <small className="tw:block tw:text-[9px] tw:text-[#9aa29b]">
+                  Entregas finalizadas
+                </small>
               </div>
+
             </article>
 
           </section>
 
-          {/* LISTA DE DOAÇÕES */}
-          <section className="donations-panel">
+          {/* PAINEL DAS DOAÇÕES */}
+          <section className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-6 tw:max-[1100px]:p-[18px] tw:max-[400px]:p-[14px]">
 
-            <div className="donations-panel-header">
+            <div className="tw:flex tw:items-center tw:justify-between tw:gap-[15px] tw:max-[400px]:items-start tw:max-[400px]:flex-col">
 
               <div>
-                <h2>Alimentos disponibilizados</h2>
-                <p>
+                <h2 className="tw:text-[16px] tw:font-bold tw:text-[#244d39]">
+                  Alimentos disponibilizados
+                </h2>
+
+                <p className="tw:mt-[6px] tw:text-[11px] tw:text-[#929b93]">
                   Acompanhe o andamento das suas ofertas.
                 </p>
               </div>
 
-              <span className="donations-count">
+              <span className="tw:whitespace-nowrap tw:rounded-full tw:bg-[#eaf2e8] tw:px-[11px] tw:py-[7px] tw:text-[10px] tw:text-[#477b57]">
                 {doacoesFiltradas.length} registros
               </span>
 
             </div>
 
             {/* FILTROS */}
-            <div className="donations-filters">
+            <div className="tw:flex tw:items-center tw:gap-2 tw:overflow-x-auto tw:border-b tw:border-[#edf0e9] tw:py-5">
 
               {filtros.map((item) => (
 
                 <button
                   key={item.valor}
                   type="button"
-                  className={filtro === item.valor ? 'filtro-ativo' : ''}
+                  className={`
+                    tw:shrink-0 tw:cursor-pointer
+                    tw:rounded-full tw:border
+                    tw:px-[13px] tw:py-[9px]
+                    tw:text-[10px] tw:transition-colors tw:duration-200
+                    ${filtro === item.valor
+                      ? 'tw:border-[#124638] tw:bg-[#124638] tw:text-white'
+                      : 'tw:border-[#e6eae3] tw:bg-white tw:text-[#718076] tw:hover:bg-[#f1f5ee]'
+                    }
+                  `}
                   onClick={() => setFiltro(item.valor)}
                 >
                   {item.nome}
@@ -233,52 +301,102 @@ function MyDonations() {
             </div>
 
             {/* CABEÇALHO DA LISTA */}
-            <div className="donations-table-header">
+            <div className="
+              tw:grid tw:grid-cols-[1.2fr_0.8fr_1.3fr_1fr]
+              tw:items-center tw:gap-[15px]
+              tw:bg-[#f7f8f4] tw:px-[10px] tw:py-[14px]
+              tw:text-[9px] tw:font-bold
+              tw:tracking-[0.5px] tw:text-[#929c93]
+              tw:max-[1100px]:grid-cols-[1.1fr_0.8fr_1.2fr_1fr]
+              tw:max-[1100px]:gap-[9px]
+              tw:max-[760px]:hidden
+            ">
+
               <span>ALIMENTO</span>
               <span>VALIDADE</span>
               <span>INSTITUIÇÃO</span>
               <span>STATUS</span>
+
             </div>
 
             {/* REGISTROS */}
-            <div className="donations-list">
+            <div>
 
               {doacoesFiltradas.map((doacao) => (
 
-                <article className="donation-row" key={doacao.id}>
+                <article
+                  className="
+                    tw:grid tw:grid-cols-[1.2fr_0.8fr_1.3fr_1fr]
+                    tw:items-center tw:gap-[15px]
+                    tw:border-b tw:border-[#edf0e9]
+                    tw:px-[10px] tw:py-[17px]
+                    tw:max-[1100px]:grid-cols-[1.1fr_0.8fr_1.2fr_1fr]
+                    tw:max-[1100px]:gap-[9px]
+                    tw:max-[760px]:grid-cols-2
+                    tw:max-[760px]:gap-[14px]
+                    tw:max-[760px]:px-[5px]
+                    tw:max-[760px]:py-[18px]
+                  "
+                  key={doacao.id}
+                >
 
-                  <div className="donation-food">
+                  {/* ALIMENTO */}
+                  <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-[11px] tw:max-[760px]:col-span-full">
 
-                    <div className="donation-food-image">
-                      <img src={doacao.imagem} alt={doacao.nome} />
+                    <div className="tw:grid tw:size-11 tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#edf2e9]">
+                      <img
+                        src={doacao.imagem}
+                        alt={doacao.nome}
+                        className="tw:size-[31px] tw:object-contain"
+                      />
                     </div>
 
-                    <div>
-                      <strong>{doacao.nome}</strong>
-                      <small>{doacao.quantidade}</small>
-                      <small>Disponibilizada em {doacao.data}</small>
+                    <div className="tw:min-w-0">
+                      <strong className="tw:block tw:text-[12px] tw:text-[#344a3c]">
+                        {doacao.nome}
+                      </strong>
+
+                      <small className="tw:mt-1 tw:block tw:text-[9px] tw:text-[#929b93]">
+                        {doacao.quantidade}
+                      </small>
+
+                      <small className="tw:mt-1 tw:block tw:text-[9px] tw:text-[#929b93]">
+                        Disponibilizada em {doacao.data}
+                      </small>
                     </div>
 
                   </div>
 
-                  <div className="donation-expiration">
-                    <CalendarDays size={16} />
+                  {/* VALIDADE */}
+                  <div className="tw:flex tw:items-center tw:gap-2 tw:text-[10px] tw:text-[#708075] tw:max-[760px]:col-start-1">
+                    <CalendarDays
+                      size={16}
+                      className="tw:shrink-0 tw:text-[#668b70]"
+                    />
                     {doacao.validade}
                   </div>
 
-                  <div className="donation-institution">
-                    <HeartHandshake size={17} />
-                    <div>
-                      <strong>{doacao.instituicao}</strong>
-                      <small>
+                  {/* INSTITUIÇÃO */}
+                  <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-[9px] tw:text-[#568064] tw:max-[760px]:col-span-full">
+
+                    <HeartHandshake size={17} className="tw:shrink-0" />
+
+                    <div className="tw:min-w-0">
+                      <strong className="tw:block tw:text-[10px] tw:leading-[1.4] tw:text-[#40564a]">
+                        {doacao.instituicao}
+                      </strong>
+
+                      <small className="tw:mt-[5px] tw:flex tw:items-center tw:gap-[3px] tw:text-[9px] tw:text-[#929b93]">
                         <MapPin size={12} />
                         {doacao.regiao}
                       </small>
                     </div>
+
                   </div>
 
-                  <div>
-                    <span className={`donation-status status-${doacao.status}`}>
+                  {/* STATUS */}
+                  <div className="tw:max-[760px]:col-start-2 tw:max-[760px]:row-start-2 tw:max-[760px]:justify-self-end">
+                    <span className={`tw:inline-block tw:w-fit tw:whitespace-nowrap tw:rounded-full tw:px-[10px] tw:py-[7px] tw:text-[9px] ${statusClasses[doacao.status]}`}>
                       {obterStatus(doacao.status)}
                     </span>
                   </div>
@@ -287,27 +405,40 @@ function MyDonations() {
 
               ))}
 
+              {/* LISTA VAZIA */}
               {doacoesFiltradas.length === 0 && (
 
-                <div className="donations-empty">
+                <div className="tw:flex tw:flex-col tw:items-center tw:gap-[10px] tw:px-[15px] tw:py-[45px] tw:text-center tw:text-[#829186]">
+
                   <Package size={32} />
-                  <strong>Nenhuma doação encontrada</strong>
-                  <p>Não há registros com esse status.</p>
+
+                  <strong className="tw:text-[14px] tw:text-[#345742]">
+                    Nenhuma doação encontrada
+                  </strong>
+
+                  <p className="tw:text-[12px]">
+                    Não há registros com esse status.
+                  </p>
+
                 </div>
 
               )}
 
             </div>
+
           </section>
 
           {/* AVISO */}
-          <section className="donations-tip">
+          <section className="tw:mt-5 tw:flex tw:items-start tw:gap-[14px] tw:rounded-[11px] tw:bg-[#eaf1e7] tw:p-[21px] tw:text-[#477b57] tw:max-[400px]:p-4">
 
-            <HeartHandshake size={24} />
+            <HeartHandshake size={24} className="tw:shrink-0" />
 
             <div>
-              <strong>Cada doação faz a diferença!</strong>
-              <p>
+              <strong className="tw:text-[13px]">
+                Cada doação faz a diferença!
+              </strong>
+
+              <p className="tw:mt-[6px] tw:text-[11px] tw:leading-[1.6] tw:text-[#718278]">
                 Quando uma instituição solicitar um alimento,
                 você poderá analisar o pedido antes de confirmar a reserva.
               </p>

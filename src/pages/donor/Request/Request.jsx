@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 
 import {
@@ -15,9 +16,6 @@ import {
 } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
-
-import '../Dashboard/Dashborad.jsx'
-import './Request.css'
 
 const solicitacoesIniciais = [
   {
@@ -58,6 +56,12 @@ const filtros = [
   { valor: 'reservada', nome: 'Reservadas' },
   { valor: 'recusada', nome: 'Recusadas' }
 ]
+
+const statusClasses = {
+  pendente: 'tw:bg-[#fff1d8] tw:text-[#a97930]',
+  reservada: 'tw:bg-[#e5f1e8] tw:text-[#438358]',
+  recusada: 'tw:bg-[#f8e9e6] tw:text-[#b15e51]'
+}
 
 function Requests() {
   const [solicitacoes, setSolicitacoes] = useState(solicitacoesIniciais)
@@ -105,39 +109,50 @@ function Requests() {
   }
 
   return (
-    <div className="donor-layout">
+    <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
 
+      {/* MENU LATERAL */}
       <DonorSidebar />
 
-      <main className="donor-main">
+      {/* CONTEÚDO PRINCIPAL */}
+      <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
         {/* CABEÇALHO */}
-        <header className="donor-topbar">
+        <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
 
-          <div className="topbar-breadcrumb">
+          <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
             <span>RedePratos</span>
             <span>/</span>
-            <strong>Solicitações recebidas</strong>
+            <strong className="tw:text-[#315c43]">
+              Solicitações recebidas
+            </strong>
           </div>
 
-          <button className="notification-button" aria-label="Notificações">
+          <button
+            className="tw:relative tw:grid tw:size-10 tw:cursor-pointer tw:place-items-center tw:rounded-full tw:border tw:border-[#e8eae2] tw:bg-white tw:text-[#315c43]"
+            aria-label="Notificações"
+          >
             <Bell size={20} />
-            <span></span>
+            <span className="tw:absolute tw:top-2 tw:right-[9px] tw:size-[7px] tw:rounded-full tw:bg-[#d78b42]"></span>
           </button>
 
         </header>
 
-        <div className="requests-page">
+        <div className="tw:pt-[35px] tw:pb-10">
 
           {/* TÍTULO */}
-          <section className="requests-header">
+          <section className="tw:mb-7">
 
             <div>
-              <span>SUA PARTICIPAÇÃO FAZ A DIFERENÇA</span>
+              <span className="tw:text-[10px] tw:font-bold tw:tracking-[1px] tw:text-[#689171]">
+                SUA PARTICIPAÇÃO FAZ A DIFERENÇA
+              </span>
 
-              <h1>Solicitações recebidas</h1>
+              <h1 className="tw:my-[9px] tw:text-[29px] tw:font-bold tw:tracking-[-0.7px] tw:text-[#124638]">
+                Solicitações recebidas
+              </h1>
 
-              <p>
+              <p className="tw:text-[13px] tw:leading-[1.6] tw:text-[#78847b]">
                 Acompanhe os pedidos das instituições interessadas
                 nos seus alimentos.
               </p>
@@ -146,79 +161,118 @@ function Requests() {
           </section>
 
           {/* RESUMO */}
-          <section className="requests-summary">
+          <section className="tw:mb-[25px] tw:grid tw:grid-cols-3 tw:gap-4 tw:max-[1000px]:grid-cols-2 tw:max-[760px]:grid-cols-1">
 
-            <article className="request-summary-card">
+            {/* TOTAL */}
+            <article className="tw:flex tw:items-center tw:gap-[13px] tw:rounded-[11px] tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-[19px]">
 
-              <div className="request-summary-icon">
+              <div className="tw:grid tw:size-[43px] tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#eaf2e8] tw:text-[#477b57]">
                 <HeartHandshake size={21} />
               </div>
 
               <div>
-                <span>Total de solicitações</span>
-                <strong>{solicitacoes.length}</strong>
-                <small>Pedidos recebidos</small>
+                <span className="tw:block tw:text-[11px] tw:text-[#78847b]">
+                  Total de solicitações
+                </span>
+
+                <strong className="tw:my-[5px] tw:block tw:text-[24px] tw:text-[#244d39]">
+                  {solicitacoes.length}
+                </strong>
+
+                <small className="tw:block tw:text-[10px] tw:text-[#9aa29b]">
+                  Pedidos recebidos
+                </small>
               </div>
 
             </article>
 
-            <article className="request-summary-card">
+            {/* PENDENTES */}
+            <article className="tw:flex tw:items-center tw:gap-[13px] tw:rounded-[11px] tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-[19px]">
 
-              <div className="request-summary-icon pending-icon">
+              <div className="tw:grid tw:size-[43px] tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#fff1d8] tw:text-[#c28a37]">
                 <Clock3 size={21} />
               </div>
 
               <div>
-                <span>Pendentes</span>
-                <strong>{pendentes}</strong>
-                <small>Aguardando sua resposta</small>
+                <span className="tw:block tw:text-[11px] tw:text-[#78847b]">
+                  Pendentes
+                </span>
+
+                <strong className="tw:my-[5px] tw:block tw:text-[24px] tw:text-[#244d39]">
+                  {pendentes}
+                </strong>
+
+                <small className="tw:block tw:text-[10px] tw:text-[#9aa29b]">
+                  Aguardando sua resposta
+                </small>
               </div>
 
             </article>
 
-            <article className="request-summary-card">
+            {/* RESERVADAS */}
+            <article className="tw:flex tw:items-center tw:gap-[13px] tw:rounded-[11px] tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-[19px]">
 
-              <div className="request-summary-icon reserved-icon">
+              <div className="tw:grid tw:size-[43px] tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#e5f1e8] tw:text-[#438358]">
                 <CheckCircle2 size={21} />
               </div>
 
               <div>
-                <span>Reservadas</span>
-                <strong>{reservadas}</strong>
-                <small>Com reserva confirmada</small>
+                <span className="tw:block tw:text-[11px] tw:text-[#78847b]">
+                  Reservadas
+                </span>
+
+                <strong className="tw:my-[5px] tw:block tw:text-[24px] tw:text-[#244d39]">
+                  {reservadas}
+                </strong>
+
+                <small className="tw:block tw:text-[10px] tw:text-[#9aa29b]">
+                  Com reserva confirmada
+                </small>
               </div>
 
             </article>
 
           </section>
 
-          {/* LISTA */}
-          <section className="requests-panel">
+          {/* PAINEL */}
+          <section className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-6 tw:max-[760px]:p-[17px] tw:max-[400px]:p-[14px]">
 
-            <div className="requests-panel-header">
+            <div className="tw:flex tw:items-center tw:justify-between tw:gap-[15px] tw:max-[760px]:items-start tw:max-[760px]:flex-col">
 
               <div>
-                <h2>Pedidos das instituições</h2>
-                <p>
+                <h2 className="tw:text-[16px] tw:font-bold tw:text-[#244d39]">
+                  Pedidos das instituições
+                </h2>
+
+                <p className="tw:mt-[6px] tw:text-[11px] tw:text-[#929b93]">
                   Analise as solicitações antes de confirmar uma reserva.
                 </p>
               </div>
 
-              <span className="requests-count">
+              <span className="tw:whitespace-nowrap tw:rounded-full tw:bg-[#eaf2e8] tw:px-[11px] tw:py-[7px] tw:text-[10px] tw:text-[#477b57]">
                 {solicitacoesFiltradas.length} registros
               </span>
 
             </div>
 
             {/* FILTROS */}
-            <div className="requests-filters">
+            <div className="tw:flex tw:items-center tw:gap-[9px] tw:overflow-x-auto tw:border-b tw:border-[#edf0e9] tw:py-5">
 
               {filtros.map((item) => (
 
                 <button
                   key={item.valor}
                   type="button"
-                  className={filtro === item.valor ? 'request-filter-active' : ''}
+                  className={`
+                    tw:shrink-0 tw:cursor-pointer
+                    tw:rounded-full tw:border
+                    tw:px-[14px] tw:py-[9px]
+                    tw:text-[10px] tw:transition-colors tw:duration-200
+                    ${filtro === item.valor
+                      ? 'tw:border-[#124638] tw:bg-[#124638] tw:text-white'
+                      : 'tw:border-[#e6eae3] tw:bg-white tw:text-[#718076] tw:hover:bg-[#f1f5ee]'
+                    }
+                  `}
                   onClick={() => setFiltro(item.valor)}
                 >
                   {item.nome}
@@ -229,63 +283,82 @@ function Requests() {
             </div>
 
             {/* SOLICITAÇÕES */}
-            <div className="requests-list">
+            <div className="tw:flex tw:flex-col tw:gap-[14px] tw:pt-5">
 
               {solicitacoesFiltradas.map((solicitacao) => (
 
-                <article className="request-card" key={solicitacao.id}>
+                <article
+                  className="tw:rounded-[10px] tw:border tw:border-[#e9ebe4] tw:p-[19px] tw:max-[400px]:p-[14px]"
+                  key={solicitacao.id}
+                >
 
-                  <div className="request-card-top">
+                  {/* INSTITUIÇÃO E STATUS */}
+                  <div className="tw:flex tw:items-center tw:justify-between tw:gap-[15px] tw:max-[760px]:items-start tw:max-[760px]:flex-col">
 
-                    <div className="request-institution">
+                    <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-[11px]">
 
-                      <div className="request-institution-icon">
+                      <div className="tw:grid tw:size-[42px] tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#eaf2e8] tw:text-[#477b57]">
                         <Building2 size={21} />
                       </div>
 
-                      <div>
-                        <strong>{solicitacao.instituicao}</strong>
-                        <small>
+                      <div className="tw:min-w-0">
+                        <strong className="tw:block tw:text-[12px] tw:text-[#344a3c]">
+                          {solicitacao.instituicao}
+                        </strong>
+
+                        <small className="tw:mt-[5px] tw:block tw:text-[10px] tw:text-[#929b93]">
                           Solicitação enviada em {solicitacao.data}
                         </small>
                       </div>
 
                     </div>
 
-                    <span className={`request-status status-${solicitacao.status}`}>
+                    <span className={`tw:inline-block tw:w-fit tw:whitespace-nowrap tw:rounded-full tw:px-[11px] tw:py-2 tw:text-[10px] ${statusClasses[solicitacao.status]}`}>
                       {obterStatus(solicitacao.status)}
                     </span>
 
                   </div>
 
-                  <div className="request-card-details">
+                  {/* DETALHES */}
+                  <div className="tw:mt-[17px] tw:grid tw:grid-cols-2 tw:gap-[18px] tw:border-t tw:border-b tw:border-[#edf0e9] tw:py-[18px] tw:max-[760px]:grid-cols-1 tw:max-[760px]:gap-[17px]">
 
-                    <div className="request-food">
+                    {/* ALIMENTO */}
+                    <div className="tw:flex tw:items-center tw:gap-3">
 
-                      <div className="request-food-image">
+                      <div className="tw:grid tw:size-[52px] tw:shrink-0 tw:place-items-center tw:rounded-[11px] tw:bg-[#edf2e9]">
                         <img
                           src={solicitacao.imagem}
                           alt={solicitacao.alimento}
+                          className="tw:size-[37px] tw:object-contain"
                         />
                       </div>
 
                       <div>
-                        <small>ALIMENTO SOLICITADO</small>
-                        <strong>{solicitacao.alimento}</strong>
-                        <span>{solicitacao.quantidade}</span>
+                        <small className="tw:mb-[5px] tw:block tw:text-[9px] tw:text-[#929b93]">
+                          ALIMENTO SOLICITADO
+                        </small>
+
+                        <strong className="tw:block tw:text-[13px] tw:text-[#344a3c]">
+                          {solicitacao.alimento}
+                        </strong>
+
+                        <span className="tw:mt-1 tw:block tw:text-[10px] tw:text-[#78847b]">
+                          {solicitacao.quantidade}
+                        </span>
                       </div>
 
                     </div>
 
-                    <div className="request-location">
+                    {/* LOCALIZAÇÃO E DATA */}
+                    <div className="tw:flex tw:flex-col tw:justify-center tw:gap-3">
 
-                      <div>
-                        <CalendarDays size={16} />
+                      <div className="tw:flex tw:items-center tw:gap-[9px] tw:text-[11px] tw:text-[#78847b]">
+                        <CalendarDays size={16} className="tw:shrink-0 tw:text-[#63896c]" />
                         <span>{solicitacao.data}</span>
                       </div>
 
-                      <div>
-                        <MapPin size={16} />
+                      <div className="tw:flex tw:items-center tw:gap-[9px] tw:text-[11px] tw:text-[#78847b]">
+                        <MapPin size={16} className="tw:shrink-0 tw:text-[#63896c]" />
                         <span>{solicitacao.regiao}</span>
                       </div>
 
@@ -293,20 +366,21 @@ function Requests() {
 
                   </div>
 
-                  <div className="request-card-bottom">
+                  {/* AÇÕES */}
+                  <div className="tw:flex tw:items-center tw:justify-between tw:gap-[15px] tw:pt-[17px] tw:max-[760px]:items-start tw:max-[760px]:flex-col">
 
                     {solicitacao.status === 'pendente' ? (
 
                       <>
-                        <p>
+                        <p className="tw:text-[11px] tw:leading-[1.5] tw:text-[#78847b]">
                           Esta instituição está interessada no seu alimento.
                         </p>
 
-                        <div className="request-actions">
+                        <div className="tw:flex tw:items-center tw:gap-[9px] tw:max-[760px]:w-full">
 
                           <button
                             type="button"
-                            className="request-reject"
+                            className="tw:flex tw:items-center tw:justify-center tw:gap-[7px] tw:cursor-pointer tw:rounded-[7px] tw:border tw:border-[#e9d9d5] tw:bg-white tw:px-[14px] tw:py-[10px] tw:text-[10px] tw:font-bold tw:text-[#a75e53] tw:transition-colors tw:hover:bg-[#fdf1ef] tw:max-[760px]:flex-1 tw:max-[400px]:px-2 tw:max-[400px]:text-[9px]"
                             onClick={() =>
                               atualizarStatus(solicitacao.id, 'recusada')
                             }
@@ -317,7 +391,7 @@ function Requests() {
 
                           <button
                             type="button"
-                            className="request-accept"
+                            className="tw:flex tw:items-center tw:justify-center tw:gap-[7px] tw:cursor-pointer tw:rounded-[7px] tw:border tw:border-[#124638] tw:bg-[#124638] tw:px-[14px] tw:py-[10px] tw:text-[10px] tw:font-bold tw:text-white tw:transition-colors tw:hover:bg-[#1d624d] tw:max-[760px]:flex-1 tw:max-[400px]:px-2 tw:max-[400px]:text-[9px]"
                             onClick={() =>
                               atualizarStatus(solicitacao.id, 'reservada')
                             }
@@ -331,15 +405,15 @@ function Requests() {
 
                     ) : solicitacao.status === 'reservada' ? (
 
-                      <div className="request-message reserved-message">
-                        <CheckCircle2 size={17} />
+                      <div className="tw:flex tw:items-center tw:gap-2 tw:text-[11px] tw:leading-[1.5] tw:text-[#477b57]">
+                        <CheckCircle2 size={17} className="tw:shrink-0" />
                         Reserva confirmada. Aguardando a organização da entrega.
                       </div>
 
                     ) : (
 
-                      <div className="request-message rejected-message">
-                        <XCircle size={17} />
+                      <div className="tw:flex tw:items-center tw:gap-2 tw:text-[11px] tw:leading-[1.5] tw:text-[#b15e51]">
+                        <XCircle size={17} className="tw:shrink-0" />
                         Esta solicitação foi recusada.
                       </div>
 
@@ -351,16 +425,21 @@ function Requests() {
 
               ))}
 
+              {/* LISTA VAZIA */}
               {solicitacoesFiltradas.length === 0 && (
 
-                <div className="requests-empty">
+                <div className="tw:flex tw:flex-col tw:items-center tw:gap-[10px] tw:px-[15px] tw:py-[45px] tw:text-center tw:text-[#829186]">
+
                   <Package size={34} />
 
-                  <strong>Nenhuma solicitação encontrada</strong>
+                  <strong className="tw:text-[14px] tw:text-[#345742]">
+                    Nenhuma solicitação encontrada
+                  </strong>
 
-                  <p>
+                  <p className="tw:text-[12px] tw:text-[#929b93]">
                     Não há pedidos com esse status no momento.
                   </p>
+
                 </div>
 
               )}
@@ -370,14 +449,16 @@ function Requests() {
           </section>
 
           {/* INFORMAÇÃO */}
-          <section className="requests-tip">
+          <section className="tw:mt-5 tw:flex tw:items-start tw:gap-[13px] tw:rounded-[11px] tw:bg-[#eaf1e7] tw:p-5 tw:text-[#477b57] tw:max-[400px]:p-[15px]">
 
-            <HeartHandshake size={24} />
+            <HeartHandshake size={24} className="tw:shrink-0" />
 
             <div>
-              <strong>Você decide antes de confirmar uma doação.</strong>
+              <strong className="tw:text-[12px]">
+                Você decide antes de confirmar uma doação.
+              </strong>
 
-              <p>
+              <p className="tw:mt-[6px] tw:text-[11px] tw:leading-[1.6] tw:text-[#718278]">
                 Ao aceitar uma solicitação, o alimento ficará reservado.
                 A doação só será considerada concluída após a confirmação
                 da entrega.
