@@ -382,7 +382,15 @@ function Dashboard() {
 
           </div>
 
+          <Link
+            to="/inicio/meu-impacto"
+          >
+
           <ArrowUpRight size={21} className="tw:shrink-0" />
+
+          </Link>
+
+          
 
         </section>
 

@@ -111,23 +111,13 @@ function DonorSidebar() {
           Solicitações
         </NavLink>
 
-        <Link
-          to="/inicio#impacto"
-          className="
-            tw:flex tw:items-center tw:gap-[13px]
-            tw:rounded-[9px] tw:px-3 tw:py-[13px]
-            tw:text-[13px] tw:text-[#69776e]
-            tw:transition-colors tw:duration-200
-            tw:hover:bg-[#f0f4ed]
-            tw:hover:text-[#124638]
-            tw:max-[760px]:shrink-0
-            tw:max-[760px]:whitespace-nowrap
-            tw:max-[760px]:p-[10px]
-          "
+        <NavLink
+          to="/inicio/meu-impacto"
+          className={menuItemClass}
         >
           <TrendingUp size={19} />
           Meu impacto
-        </Link>
+        </NavLink>
 
       </nav>
 
