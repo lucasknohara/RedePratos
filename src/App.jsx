@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import Home from './pages/public/Home/Home.jsx'
 import Dashboard from './pages/donor/Dashboard/Dashborad.jsx'
@@ -12,6 +12,7 @@ import Impact from './pages/donor/Impact/Impact.jsx'
 import Profile from './pages/donor/Profile/Profile.jsx'
 import InstitutionDashboard from './pages/institution/Dashboard/Dashboard.jsx'
 import Donations from './pages/institution/Donations/Donations.jsx'
+import RequestsInstitution from './pages/institution/Request/Request.jsx'
 
 function App() {
   return (
@@ -44,6 +45,8 @@ function App() {
         <Route path="/instituicao" element={<InstitutionDashboard />} />
 
         <Route path="/instituicao/doacoes" element={<Donations />} />
+
+        <Route path="/instituicao/solicitacoes" element={<RequestsInstitution />} />
 
       </Routes>
     </BrowserRouter>
