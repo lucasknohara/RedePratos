@@ -10,6 +10,7 @@ A IA foi utilizada como apoio, não como substituta das decisões ou do trabalho
 | “Leie esse PDF e me explique os requisitos pedidos pelas disciplinas nas entregas.” | Explicação e orientação sobre o solicitado. |
 | “Quais verificações devo executar antes de concluir o Front-end?” | Organização da validação com lint, build e testes manuais no navegador. |
 | “Me ajude a melhorar textos.” | Apoio na elaboração dos textos do sistema Redepratos, deste arquivo e README. |
+| “Me ensine passo a passo de como ligar frontend com backend” | Apoio no aprendizado e no ligamento do Front com Back. |
 
 ## 3. Validação pela equipe
 

@@ -1,6 +1,5 @@
-
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   User,
   Mail,
@@ -12,6 +11,8 @@ import {
   Building2
 } from 'lucide-react'
 
+import { cadastrarUsuario } from '../../../services/usuarioService.js'
+
 function Cadastro() {
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -21,13 +22,14 @@ function Cadastro() {
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
   const [erro, setErro] = useState('')
-  const [mensagem, setMensagem] = useState('')
+  const [carregando, setCarregando] = useState(false)
 
-  function handleSubmit(event) {
+  const navigate = useNavigate()
+
+  async function handleSubmit(event) {
     event.preventDefault()
 
     setErro('')
-    setMensagem('')
 
     if (senha.length < 8) {
       setErro('A senha precisa ter pelo menos 8 caracteres.')
@@ -44,10 +46,38 @@ function Cadastro() {
       return
     }
 
-    // O cadastro será conectado ao backend posteriormente.
-    setMensagem(
-      'Os dados foram validados!'
-    )
+    setCarregando(true)
+
+    try {
+      const usuarioCriado = await cadastrarUsuario({
+        nome: nome.trim(),
+        email: email.trim(),
+        tipo_usuario: tipoPerfil,
+        senha
+      })
+
+      navigate(
+        tipoPerfil === 'doador'
+          ? '/doador'
+          : '/instituicao',
+        {
+          replace: true,
+          state: { usuario: usuarioCriado }
+        }
+      )
+
+      setNome('')
+      setEmail('')
+      setSenha('')
+      setConfirmarSenha('')
+      setTipoPerfil('')
+
+    } catch (error) {
+      setErro(error.message || 'Não foi possível realizar o cadastro.')
+
+    } finally {
+      setCarregando(false)
+    }
   }
 
   const estiloCampo =
@@ -323,18 +353,13 @@ function Cadastro() {
               </p>
             )}
 
-            {mensagem && (
-              <p className="tw:text-sm tw:text-[#3D6047] tw:bg-[#EFF6EF] tw:p-3 tw:rounded-lg">
-                {mensagem}
-              </p>
-            )}
-
             {/* Botão de cadastro */}
             <button
               type="submit"
-              className="tw:w-full tw:bg-[#52745B] tw:text-white tw:font-semibold tw:py-3 tw:rounded-xl tw:hover:bg-[#3D6047] tw:transition-colors"
+              disabled={carregando}
+              className="tw:w-full tw:bg-[#52745B] tw:text-white tw:font-semibold tw:py-3 tw:rounded-xl tw:hover:bg-[#3D6047] tw:transition-colors disabled:tw:cursor-not-allowed disabled:tw:opacity-60"
             >
-              Criar minha conta
+              {carregando ? 'Criando conta...' : 'Criar minha conta'}
             </button>
 
           </form>
