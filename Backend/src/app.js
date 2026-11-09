@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const errorHandler = require("./middleware/errorHandler.js");
 const usuarioRoutes = require("./routers/usuarioRouter.js");
 
 const app = express();
@@ -15,5 +16,7 @@ app.get("/api/teste", (req, res) => {
         message: "API rodando!"
     })
 });
+
+app.use(errorHandler);
 
 module.exports = app
