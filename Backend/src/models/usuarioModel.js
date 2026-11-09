@@ -7,7 +7,7 @@ async function criarUsuario(nome, email, tipo_usuario, senha_hash) {
 };
 
 async function buscarUsuarioPorEmail(email) {
-    const [resultado] = await connection.query("SELECT id FROM usuarios WHERE email = ? LIMIT 1", [email]);
+    const [resultado] = await connection.query("SELECT * FROM usuarios WHERE email = ? LIMIT 1", [email]);
 
     return resultado[0] ?? null;
 };
