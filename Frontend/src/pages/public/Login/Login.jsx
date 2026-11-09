@@ -1,30 +1,57 @@
-
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
+
+import { loginUsuario } from '../../../services/usuarioService.js'
 
 function Login() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [erro, setErro] = useState('')
+  const [carregando, setCarregando] = useState(false)
 
-  function handleSubmit(event) {
+  const navigate = useNavigate()
+
+
+  async function handleSubmit(event) {
     event.preventDefault()
     setErro('')
-
+  
     if (!email.trim() || !senha.trim()) {
       setErro('Preencha todos os campos.')
       return
     }
-
+  
     if (!email.includes('@')) {
       setErro('Informe um e-mail válido.')
       return
     }
-
-    // A autenticação será conectada ao backend posteriormente.
-    setErro('A autenticação ainda não está disponível.')
+  
+    setCarregando(true)
+  
+    try {
+      const usuario = await loginUsuario({
+        email: email.trim(),
+        senha
+      })
+    
+      navigate(
+        usuario.tipo_usuario === 'doador'
+          ? '/doador'
+          : '/instituicao',
+        {
+          replace: true,
+          state: { usuario }
+        }
+      )
+    
+    } catch (error) {
+      setErro(error.message || 'Email ou senha inválidos!')
+    
+    } finally {
+      setCarregando(false)
+    }
   }
 
   return (
@@ -143,9 +170,10 @@ function Login() {
             {/* Botão Entrar */}
             <button
               type="submit"
-              className="tw:w-full tw:bg-[#52745B] tw:text-white tw:font-semibold tw:py-3 tw:rounded-xl tw:hover:bg-[#3D6047] tw:transition-colors"
+              disabled={carregando}
+              className="tw:w-full tw:bg-[#52745B] tw:text-white tw:font-semibold tw:py-3 tw:rounded-xl tw:hover:bg-[#3D6047] tw:transition-colors disabled:tw:cursor-not-allowed disabled:tw:opacity-60"
             >
-              Entrar
+              {carregando ? 'Entrando...' : 'Entrar'}
             </button>
 
           </form>

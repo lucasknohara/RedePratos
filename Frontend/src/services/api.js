@@ -21,7 +21,7 @@ export async function apiRequest(endpoint, options = {}) {
 
   if (!response.ok) {
     const mensagem =
-      dados?.message || "Não foi possível concluir a operação."
+      dados?.message || dados?.mensagem || "Não foi possível concluir a operação."
 
     throw new Error(mensagem)
   }
