@@ -12,7 +12,7 @@ async function criarUsuarioService(nome, email, tipo_usuario, senha) {
     }
 
     if (typeof email !== "string" || email.trim() === "") {
-        throw new AppError("email inválido!", 400);
+        throw new AppError("Email inválido!", 400);
     }
 
     if (typeof tipo_usuario !== "string" || tipo_usuario.trim() === "" || (tipo_usuario !== "doador" && tipo_usuario !== "instituicao")) {
