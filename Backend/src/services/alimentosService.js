@@ -57,6 +57,25 @@ async function criarAlimentoService(nome, categoria, quantidade, unidade, valida
     }
 };
 
+async function listarAlimentosService(id_usuario) {
+    const idUsuario = Number(id_usuario);
+    
+    if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+        throw new AppError("Id inválido!", 400)
+    }
+ 
+    const buscarUsuario = await alimentosModel.buscarUsuarioPorId(idUsuario);
+
+    if (buscarUsuario === null) {
+        throw new AppError("Usuario não existe!", 404);
+    }
+
+    const resultado = await alimentosModel.listarAlimentos(idUsuario);
+
+    return resultado;
+};
+
 module.exports = {
     criarAlimentoService,
+    listarAlimentosService,
 };

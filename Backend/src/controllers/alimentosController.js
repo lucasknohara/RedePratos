@@ -7,6 +7,14 @@ async function criarAlimentoController(req, res) {
     res.status(201).json(resultado);
 };
 
+async function listarAlimentosController(req, res) {
+    const { id_usuario } = req.query;
+    const resultado = await alimentosService.listarAlimentosService(id_usuario);
+
+    res.status(200).json(resultado);
+}
+
 module.exports = {
     criarAlimentoController,
+    listarAlimentosController,
 };
