@@ -1,8 +1,8 @@
 const connection = require("../config/database.js");
 
 async function criarAlimento(nome, categoria, quantidade, unidade, validade, origem, observacao, id_usuario) {
-    const [resultado] = await connection.query(
-        `INSERT INTO alimentos (nome, categoria, quantidade, unidade, validade, origem, observacao, id_usuario)
+    const [resultado] = await connection.query(`
+        INSERT INTO alimentos (nome, categoria, quantidade, unidade, validade, origem, observacao, id_usuario)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [nome, categoria, quantidade, unidade, validade, origem, observacao, id_usuario]
     );
 
@@ -21,8 +21,25 @@ async function buscarUsuarioPorId(id_usuario) {
     return resultado[0] ?? null;
 };
 
+async function atualizarAlimento(id_alimento, nome, categoria, quantidade, unidade, validade, origem, observacao, id_usuario) {
+    const [resultado] = await connection.query(`
+        UPDATE alimentos SET nome = ?, categoria = ?, quantidade = ?, unidade = ?, validade = ?, origem = ?, observacao = ?
+        WHERE id = ? AND id_usuario = ?`, [nome, categoria, quantidade, unidade, validade, origem, observacao, id_alimento, id_usuario]
+    );
+
+    return resultado;
+};
+
+async function buscarAlimento(id_alimento, id_usuario) {
+    const [resultado] = await connection.query("SELECT id FROM alimentos WHERE id = ? AND id_usuario = ? LIMIT 1", [id_alimento, id_usuario]);
+
+    return resultado[0] ?? null;
+};
+
 module.exports = {
     criarAlimento,
     listarAlimentos,
     buscarUsuarioPorId,
+    atualizarAlimento,
+    buscarAlimento,
 };
