@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
-import { listarAlimentos } from '../../../services/alimentosService.js'
+import { listarAlimentos, deletarAlimento } from '../../../services/alimentosService.js'
 
 import { Link } from 'react-router-dom'
 
@@ -110,6 +110,9 @@ function Pantry() {
   const [busca, setBusca] = useState('')
   const [categoria, setCategoria] = useState('Todas')
   const [status, setStatus] = useState('Todos')
+  const [excluindoId, setExcluindoId] = useState(null)
+  const [erroAcao, setErroAcao] = useState('')
+  const [sucessoAcao, setSucessoAcao] = useState('')
 
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -196,6 +199,47 @@ function Pantry() {
   const alimentosDisponiveis = alimentos.filter(
     (alimento) => alimento.status === 'Disponível para doação'
   ).length
+
+  async function handleExcluir(alimento) {
+    const confirmar = window.confirm(
+      `Deseja realmente excluir ${alimento.nome}?`
+    )
+
+    if (!confirmar) return
+
+    try {
+      setExcluindoId(alimento.id)
+      setErroAcao('')
+      setSucessoAcao('')
+
+      const usuarioSalvo = localStorage.getItem('usuario')
+
+      if (!usuarioSalvo) {
+        throw new Error('Faça login novamente.')
+      }
+
+      const usuario = JSON.parse(usuarioSalvo)
+      const idUsuario = Number(usuario?.id)
+
+      if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+        throw new Error('Identificação do usuário inválida.')
+      }
+
+      await deletarAlimento(alimento.id, idUsuario)
+
+      setAlimentos((anteriores) =>
+        anteriores.filter((item) => item.id !== alimento.id)
+      )
+
+      setSucessoAcao(`${alimento.nome} foi excluído com sucesso.`)
+
+    } catch (error) {
+      setErroAcao(error.message || 'Não foi possível excluir o alimento.')
+
+    } finally {
+      setExcluindoId(null)
+    }
+  }
 
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
@@ -395,6 +439,18 @@ function Pantry() {
 
             </div>
 
+            {sucessoAcao && (
+              <p className="tw:mb-4 tw:rounded-lg tw:bg-green-50 tw:p-3 tw:text-[12px] tw:text-green-700">
+                {sucessoAcao}
+              </p>
+            )}
+            
+            {erroAcao && (
+              <p className="tw:mb-4 tw:rounded-lg tw:bg-red-50 tw:p-3 tw:text-[12px] tw:text-red-600">
+                {erroAcao}
+              </p>
+            )}
+
             {/* CABEÇALHO DA LISTA */}
             <div className="tw:grid tw:grid-cols-[1.5fr_0.9fr_1.2fr_1.2fr_75px] tw:items-center tw:gap-3 tw:border-t tw:border-b tw:border-[#edf0e9] tw:bg-[#f7f8f4] tw:px-[10px] tw:py-[14px] tw:text-[9px] tw:font-bold tw:tracking-[0.5px] tw:text-[#929c93] tw:max-[1100px]:grid-cols-[1.3fr_0.8fr_1.2fr_1fr_65px] tw:max-[1100px]:gap-2 tw:max-[760px]:hidden">
 
@@ -528,10 +584,11 @@ function Pantry() {
 
                         <button
                           type="button"
-                          disabled
-                          title="Exclusão será implementada na próxima etapa"
+                          onClick={() => handleExcluir(alimento)}
+                          disabled={excluindoId === alimento.id}
+                          title="Excluir alimento"
                           aria-label={`Excluir ${alimento.nome}`}
-                          className="tw:grid tw:size-[29px] tw:cursor-not-allowed tw:place-items-center tw:rounded-md tw:bg-[#f4f6f1] tw:text-[#7e8c81] disabled:tw:opacity-100"
+                          className="tw:grid tw:size-[29px] tw:cursor-pointer tw:place-items-center tw:rounded-md tw:bg-[#f4f6f1] tw:text-[#7e8c81] tw:hover:bg-red-50 tw:hover:text-red-600 disabled:tw:cursor-not-allowed disabled:tw:opacity-50"
                         >
                           <Trash2 size={16} />
                         </button>
