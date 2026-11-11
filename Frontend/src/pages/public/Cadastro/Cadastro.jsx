@@ -56,6 +56,13 @@ function Cadastro() {
         senha
       })
 
+      localStorage.setItem('usuario', JSON.stringify({
+        id: usuarioCriado.id,
+        nome: usuarioCriado.nome,
+        email: usuarioCriado.email,
+        tipo_usuario: usuarioCriado.tipo_usuario
+      }))
+
       navigate(
         tipoPerfil === 'doador'
           ? '/doador'

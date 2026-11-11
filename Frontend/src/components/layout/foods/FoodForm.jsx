@@ -65,7 +65,7 @@ function FoodForm() {
             htmlFor="categoria"
             className="tw:text-[12px] tw:font-bold tw:text-[#344a3c]"
           >
-            Categoria
+            Categoria *
           </label>
 
           <select

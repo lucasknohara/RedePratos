@@ -35,6 +35,13 @@ function Login() {
         email: email.trim(),
         senha
       })
+
+      localStorage.setItem('usuario', JSON.stringify({
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+        tipo_usuario: usuario.tipo_usuario
+      }))
     
       navigate(
         usuario.tipo_usuario === 'doador'
