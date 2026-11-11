@@ -4,7 +4,87 @@ import {
   Info
 } from 'lucide-react'
 
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+import { criarAlimento } from '../../../services/alimentosService.js'
+
 function FoodForm() {
+  const [carregando, setCarregando] = useState(false)
+  const [erro, setErro] = useState('')
+
+  const navigate = useNavigate()
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setErro('')
+
+    const formulario = event.currentTarget
+    const formData = new FormData(formulario)
+
+    // Recuperar usuário salvo no navegador
+    let usuario
+
+    try {
+      const usuarioSalvo = localStorage.getItem('usuario')
+
+      if (!usuarioSalvo) {
+        throw new Error('Faça login novamente para cadastrar alimentos.')
+      }
+
+      usuario = JSON.parse(usuarioSalvo)
+
+    } catch (error) {
+      setErro(error.message || 'Não foi possível recuperar seus dados.')
+      return
+    }
+
+    const idUsuario = Number(usuario.id)
+
+    if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+      setErro('Identificação do usuário inválida. Faça login novamente.')
+      return
+    }
+
+    if (usuario.tipo_usuario !== 'doador') {
+      setErro('Somente usuários do perfil Doador podem cadastrar alimentos.')
+      return
+    }
+
+    // Organizar os dados para enviar ao Backend
+    const dados = {
+      nome: formData.get('nome').trim(),
+      categoria: formData.get('categoria'),
+      quantidade: Number(formData.get('quantidade')),
+      unidade: formData.get('unidade'),
+      validade: formData.get('validade'),
+      origem: formData.get('origem'),
+      observacao: formData.get('observacao').trim() || null,
+      id_usuario: idUsuario
+    }
+
+    setCarregando(true)
+
+    try {
+      await criarAlimento(dados)
+
+      formulario.reset()
+
+      navigate('/doador/alimentos', {
+        replace: true,
+        state: {
+          mensagem: 'Alimento cadastrado com sucesso!'
+        }
+      })
+
+    } catch (error) {
+      setErro(error.message || 'Não foi possível cadastrar o alimento.')
+
+    } finally {
+      setCarregando(false)
+    }
+  }
+
   return (
     <div className="
       tw:grid tw:grid-cols-[1.5fr_0.8fr]
@@ -13,7 +93,9 @@ function FoodForm() {
     ">
 
       {/* FORMULÁRIO */}
-      <form className="
+      <form 
+      onSubmit={handleSubmit}
+      className="  
         tw:rounded-xl tw:border tw:border-[#e9ebe4]
         tw:bg-white tw:p-7
         tw:max-[500px]:p-[18px]
@@ -42,6 +124,7 @@ function FoodForm() {
           <input
             type="text"
             id="nome"
+            name="nome"
             placeholder="Ex: Arroz, Tomate, Leite..."
             required
             className="
@@ -71,6 +154,7 @@ function FoodForm() {
           <select
             id="categoria"
             required
+            name="categoria"
             defaultValue=""
             className="
               tw:h-11 tw:w-full tw:rounded-lg
@@ -116,6 +200,7 @@ function FoodForm() {
             <input
               type="number"
               id="quantidade"
+              name="quantidade"
               min="0.01"
               step="0.01"
               placeholder="Ex: 5"
@@ -146,6 +231,7 @@ function FoodForm() {
             <select
               id="unidade"
               defaultValue="kg"
+              name="unidade"
               required
               className="
                 tw:h-11 tw:w-full tw:rounded-lg
@@ -195,6 +281,7 @@ function FoodForm() {
             <input
               type="date"
               id="validade"
+              name="validade"
               required
               className="
                 tw:h-11 tw:w-full tw:rounded-lg
@@ -229,6 +316,7 @@ function FoodForm() {
           <select
             id="origem"
             required
+            name="origem"
             defaultValue=""
             className="
               tw:h-11 tw:w-full tw:rounded-lg
@@ -267,6 +355,7 @@ function FoodForm() {
           <textarea
             id="observacoes"
             rows="3"
+            name="observacao"
             placeholder="Adicione alguma informação sobre o alimento..."
             className="
               tw:w-full tw:resize-y tw:rounded-lg
@@ -292,33 +381,41 @@ function FoodForm() {
 
           <button
             type="button"
+            onClick={() => navigate("/doador/alimentos")}
             className="
-              tw:cursor-not-allowed tw:rounded-lg
+              tw:rounded-lg
               tw:bg-[#edf0ea] tw:px-5 tw:py-[13px]
               tw:text-[12px] tw:font-bold
-              tw:text-[#597064] tw:opacity-[0.65]
+              tw:text-[#597064]
               tw:max-[500px]:w-full
             "
-            disabled
           >
             Cancelar
           </button>
 
           <button
-            type="button"
+            type="submit"
+            disabled={carregando}
             className="
-              tw:cursor-not-allowed tw:rounded-lg
+              tw:cursor-pointer tw:rounded-lg
               tw:bg-[#124638] tw:px-5 tw:py-[13px]
               tw:text-[12px] tw:font-bold
-              tw:text-white tw:opacity-[0.65]
+              tw:text-white tw:hover:bg-[#1c5a48]
               tw:max-[500px]:w-full
+              disabled:tw:cursor-not-allowed
+              disabled:tw:opacity-60
             "
-            disabled
           >
-            Salvar alimento
+            {carregando ? 'Salvando...' : 'Salvar alimento'}
           </button>
 
         </div>
+        
+        {erro && (
+          <p className="tw:mt-4 tw:rounded-lg tw:bg-red-50 tw:p-3 tw:text-[12px] tw:text-red-600">
+            {erro}
+          </p>
+        )}
 
         <p className="tw:mt-[15px] tw:text-right tw:text-[10px] tw:leading-[1.5] tw:text-[#a0aaa2]">
           Todos os campos com * são obrigatórios.
