@@ -67,7 +67,7 @@ async function listarAlimentosService(id_usuario) {
     const buscarUsuario = await alimentosModel.buscarUsuarioPorId(idUsuario);
 
     if (buscarUsuario === null) {
-        throw new AppError("Usuario não existe!", 404);
+        throw new AppError("Usuário não existe!", 404);
     }
 
     const resultado = await alimentosModel.listarAlimentos(idUsuario);
@@ -167,8 +167,43 @@ async function atualizarAlimentoService(id_alimento, nome, categoria, quantidade
     };
 };
 
+async function deletarAlimentoService(id_alimento, id_usuario) {
+    const idAlimento = Number(id_alimento);
+    const idUsuario = Number(id_usuario);
+
+    if (!Number.isInteger(idAlimento) || idAlimento <= 0) {
+        throw new AppError("ID do alimento inválido!", 400);
+    }
+
+    if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+        throw new AppError("ID do usuário inválido!", 400);
+    }
+
+    const buscarAlimento = await alimentosModel.buscarAlimento(idAlimento, idUsuario);
+    const buscarUsuario = await alimentosModel.buscarUsuarioPorId(idUsuario);
+
+    if (buscarAlimento === null) {
+        throw new AppError("Alimento não encontrado!", 404);
+    }
+
+    if (buscarUsuario === null) {
+        throw new AppError("Usuário não existe!", 404);
+    }
+    
+    const resultado = await alimentosModel.deletarAlimento(idAlimento, idUsuario);
+
+    if (resultado.affectedRows === 0) {
+        throw new AppError("Não foi possivel excluir alimento!", 404)
+    }
+
+    return {
+        message: "Alimento excluido!"
+    }
+};
+
 module.exports = {
     criarAlimentoService,
     listarAlimentosService,
     atualizarAlimentoService,
+    deletarAlimentoService
 };

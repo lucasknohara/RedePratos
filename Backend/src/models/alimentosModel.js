@@ -36,10 +36,17 @@ async function buscarAlimento(id_alimento, id_usuario) {
     return resultado[0] ?? null;
 };
 
+async function deletarAlimento(id_alimento, id_usuario) {
+    const [resultado] = await connection.query("DELETE FROM alimentos WHERE id = ? AND id_usuario = ?", [id_alimento, id_usuario]);
+
+    return resultado;
+};
+
 module.exports = {
     criarAlimento,
     listarAlimentos,
     buscarUsuarioPorId,
     atualizarAlimento,
     buscarAlimento,
+    deletarAlimento
 };

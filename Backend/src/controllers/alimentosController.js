@@ -22,8 +22,17 @@ async function atualizarAlimentoController(req, res) {
     res.status(200).json(resultado);
 };
 
+async function deletarAlimentoController(req, res) {
+    const { id_alimento } = req.params;
+    const { id_usuario } = req.body;
+    const resultado = await alimentosService.deletarAlimentoService(id_alimento, id_usuario);
+
+    res.status(200).json(resultado);
+};
+
 module.exports = {
     criarAlimentoController,
     listarAlimentosController,
     atualizarAlimentoController,
+    deletarAlimentoController
 };
