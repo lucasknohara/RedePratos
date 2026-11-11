@@ -40,7 +40,7 @@ async function criarAlimentoService(nome, categoria, quantidade, unidade, valida
         throw new AppError("A validade não pode ser anterior à data atual!", 400);
     }
 
-    if (typeof origemTrim !== "string" || origemTrim === "" || origemTrim !== "Residência" && origemTrim !== "Comércio") {
+    if (typeof origemTrim !== "string" || origemTrim === "" || origemTrim !== "residencia" && origemTrim !== "comercio") {
         throw new AppError("Origem inválida!", 400);
     }
 
