@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
-import { listarAlimentos, deletarAlimento } from '../../../services/alimentosService.js'
+import { listarAlimentos, deletarAlimento, atualizarAlimento } from '../../../services/alimentosService.js'
 
 import { Link } from 'react-router-dom'
 
@@ -99,6 +99,9 @@ function adaptarAlimento(alimento) {
     quantidade: `${alimento.quantidade} ${alimento.unidade}`,
     validade: validadeFormatada,
     validadeTexto,
+    categoriaOriginal: alimento.categoria,
+    quantidadeOriginal: alimento.quantidade,
+    validadeISO,
     status: 'Na despensa',
     imagem: imagens[nome.trim().toLowerCase()] || null,
     atencao: diasRestantes !== null && diasRestantes <= 7
@@ -113,6 +116,9 @@ function Pantry() {
   const [excluindoId, setExcluindoId] = useState(null)
   const [erroAcao, setErroAcao] = useState('')
   const [sucessoAcao, setSucessoAcao] = useState('')
+  const [alimentoEditando, setAlimentoEditando] = useState(null)
+  const [salvandoEdicao, setSalvandoEdicao] = useState(false)
+  const [erroEdicao, setErroEdicao] = useState('')
 
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -238,6 +244,69 @@ function Pantry() {
 
     } finally {
       setExcluindoId(null)
+    }
+  }
+
+  async function handleAtualizar(event) {
+    event.preventDefault()
+    setErroEdicao('')
+
+    const formData = new FormData(event.currentTarget)
+
+    try {
+      const usuarioSalvo = localStorage.getItem('usuario')
+
+      if (!usuarioSalvo) {
+        throw new Error('Faça login novamente.')
+      }
+
+      const usuario = JSON.parse(usuarioSalvo)
+
+      if (usuario?.tipo_usuario !== 'doador') {
+        throw new Error('Somente doadores podem editar alimentos.')
+      }
+
+      const idUsuario = Number(usuario.id)
+
+      if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+        throw new Error('Identificação do usuário inválida.')
+      }
+
+      const dados = {
+        nome: String(formData.get('nome') ?? '').trim(),
+        categoria: formData.get('categoria'),
+        quantidade: Number(formData.get('quantidade')),
+        unidade: formData.get('unidade'),
+        validade: formData.get('validade'),
+        origem: formData.get('origem'),
+        observacao: String(formData.get('observacao') ?? '').trim() || null,
+        id_usuario: idUsuario
+      }
+
+      setSalvandoEdicao(true)
+
+      const resultado = await atualizarAlimento(
+        alimentoEditando.id,
+        dados
+      )
+
+      setAlimentos((anteriores) =>
+        anteriores.map((item) =>
+          item.id === alimentoEditando.id
+            ? adaptarAlimento(resultado)
+            : item
+        )
+      )
+
+      setAlimentoEditando(null)
+      setErroAcao('')
+      setSucessoAcao(`${dados.nome} foi atualizado com sucesso.`)
+
+    } catch (error) {
+      setErroEdicao(error.message || 'Não foi possível atualizar o alimento.')
+
+    } finally {
+      setSalvandoEdicao(false)
     }
   }
 
@@ -444,7 +513,7 @@ function Pantry() {
                 {sucessoAcao}
               </p>
             )}
-            
+
             {erroAcao && (
               <p className="tw:mb-4 tw:rounded-lg tw:bg-red-50 tw:p-3 tw:text-[12px] tw:text-red-600">
                 {erroAcao}
@@ -572,15 +641,18 @@ function Pantry() {
 
                       <div className="tw:flex tw:items-center tw:gap-[5px] tw:max-[760px]:justify-self-end">
 
-                        <button
-                          type="button"
-                          disabled
-                          title="Edição será implementada na próxima etapa"
-                          aria-label={`Editar ${alimento.nome}`}
-                          className="tw:grid tw:size-[29px] tw:cursor-not-allowed tw:place-items-center tw:rounded-md tw:bg-[#f4f6f1] tw:text-[#7e8c81] disabled:tw:opacity-100"
-                        >
-                          <Pencil size={16} />
-                        </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAlimentoEditando(alimento)
+                          setErroEdicao('')
+                        }}
+                        title="Editar alimento"
+                        aria-label={`Editar ${alimento.nome}`}
+                        className="tw:grid tw:size-[29px] tw:cursor-pointer tw:place-items-center tw:rounded-md tw:bg-[#f4f6f1] tw:text-[#7e8c81] tw:hover:bg-[#eaf2e8] tw:hover:text-[#315c43]"
+                      >
+                        <Pencil size={16} />
+                      </button>
 
                         <button
                           type="button"
@@ -608,6 +680,179 @@ function Pantry() {
         </div>
 
       </main>
+
+      {alimentoEditando && (
+        <div className="tw:fixed tw:inset-0 tw:z-50 tw:flex tw:items-center tw:justify-center tw:bg-black/40 tw:p-4">
+
+          <div className="tw:max-h-[90vh] tw:w-full tw:max-w-[550px] tw:overflow-y-auto tw:rounded-xl tw:bg-white tw:p-7 tw:shadow-xl tw:max-[500px]:p-[18px]">
+
+            <div className="tw:mb-6">
+              <h2 className="tw:text-[19px] tw:font-bold tw:text-[#244d39]">
+                Editar alimento
+              </h2>
+
+              <p className="tw:mt-1 tw:text-[12px] tw:text-[#929b93]">
+                Atualize as informações do alimento.
+              </p>
+            </div>
+
+            <form onSubmit={handleAtualizar}>
+
+              <div className="tw:mb-4 tw:flex tw:flex-col tw:gap-2">
+                <label className="tw:text-[12px] tw:font-bold tw:text-[#344a3c]">
+                  Nome do alimento
+                </label>
+
+                <input
+                  type="text"
+                  name="nome"
+                  defaultValue={alimentoEditando.nome}
+                  required
+                  className="tw:h-11 tw:rounded-lg tw:border tw:border-[#e3e8e0] tw:px-3 tw:text-[12px] tw:text-[#344a3c] tw:outline-none focus:tw:border-[#4aaa70]"
+                />
+              </div>
+
+              <div className="tw:mb-4 tw:flex tw:flex-col tw:gap-2">
+                <label className="tw:text-[12px] tw:font-bold tw:text-[#344a3c]">
+                  Categoria
+                </label>
+
+                <select
+                  name="categoria"
+                  defaultValue={alimentoEditando.categoriaOriginal}
+                  required
+                  className="tw:h-11 tw:rounded-lg tw:border tw:border-[#e3e8e0] tw:bg-white tw:px-3 tw:text-[12px] tw:text-[#344a3c]"
+                >
+                  <option value="hortifruti">Hortifruti</option>
+                  <option value="frutas">Frutas</option>
+                  <option value="graos">Grãos</option>
+                  <option value="laticinios">Laticínios</option>
+                  <option value="proteinas">Proteínas</option>
+                  <option value="enlatados">Enlatados</option>
+                  <option value="massas">Massas</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+
+              <div className="tw:mb-4 tw:grid tw:grid-cols-2 tw:gap-3 tw:max-[450px]:grid-cols-1">
+
+                <div className="tw:flex tw:flex-col tw:gap-2">
+                  <label className="tw:text-[12px] tw:font-bold tw:text-[#344a3c]">
+                    Quantidade
+                  </label>
+
+                  <input
+                    type="number"
+                    name="quantidade"
+                    min="0.01"
+                    step="0.01"
+                    defaultValue={alimentoEditando.quantidadeOriginal}
+                    required
+                    className="tw:h-11 tw:rounded-lg tw:border tw:border-[#e3e8e0] tw:px-3 tw:text-[12px] tw:text-[#344a3c]"
+                  />
+                </div>
+
+                <div className="tw:flex tw:flex-col tw:gap-2">
+                  <label className="tw:text-[12px] tw:font-bold tw:text-[#344a3c]">
+                    Unidade
+                  </label>
+
+                  <select
+                    name="unidade"
+                    defaultValue={alimentoEditando.unidade}
+                    required
+                    className="tw:h-11 tw:rounded-lg tw:border tw:border-[#e3e8e0] tw:bg-white tw:px-3 tw:text-[12px] tw:text-[#344a3c]"
+                  >
+                    <option value="kg">Quilograma (kg)</option>
+                    <option value="g">Grama (g)</option>
+                    <option value="unidade">Unidade</option>
+                    <option value="litro">Litro (L)</option>
+                    <option value="ml">Mililitro (ml)</option>
+                    <option value="pacote">Pacote</option>
+                    <option value="caixa">Caixa</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <div className="tw:mb-4 tw:flex tw:flex-col tw:gap-2">
+                <label className="tw:text-[12px] tw:font-bold tw:text-[#344a3c]">
+                  Data de validade
+                </label>
+
+                <input
+                  type="date"
+                  name="validade"
+                  defaultValue={alimentoEditando.validadeISO}
+                  required
+                  className="tw:h-11 tw:rounded-lg tw:border tw:border-[#e3e8e0] tw:bg-white tw:px-3 tw:text-[12px] tw:text-[#344a3c]"
+                />
+              </div>
+
+              <div className="tw:mb-4 tw:flex tw:flex-col tw:gap-2">
+                <label className="tw:text-[12px] tw:font-bold tw:text-[#344a3c]">
+                  Origem
+                </label>
+
+                <select
+                  name="origem"
+                  defaultValue={alimentoEditando.origem}
+                  required
+                  className="tw:h-11 tw:rounded-lg tw:border tw:border-[#e3e8e0] tw:bg-white tw:px-3 tw:text-[12px] tw:text-[#344a3c]"
+                >
+                  <option value="Residência">Residência</option>
+                  <option value="Comércio">Comércio</option>
+                </select>
+              </div>
+
+              <div className="tw:mb-5 tw:flex tw:flex-col tw:gap-2">
+                <label className="tw:text-[12px] tw:font-bold tw:text-[#344a3c]">
+                  Observações
+                </label>
+
+                <textarea
+                  name="observacao"
+                  rows="3"
+                  maxLength={250}
+                  defaultValue={alimentoEditando.observacao || ''}
+                  className="tw:resize-y tw:rounded-lg tw:border tw:border-[#e3e8e0] tw:p-3 tw:text-[12px] tw:text-[#344a3c]"
+                />
+              </div>
+
+              {erroEdicao && (
+                <p className="tw:mb-4 tw:rounded-lg tw:bg-red-50 tw:p-3 tw:text-[12px] tw:text-red-600">
+                  {erroEdicao}
+                </p>
+              )}
+
+              <div className="tw:flex tw:justify-end tw:gap-3 tw:border-t tw:border-[#edf0e9] tw:pt-4 tw:max-[450px]:flex-col-reverse">
+            
+                <button
+                  type="button"
+                  disabled={salvandoEdicao}
+                  onClick={() => {
+                    setAlimentoEditando(null)
+                    setErroEdicao('')
+                  }}
+                  className="tw:rounded-lg tw:bg-[#edf0ea] tw:px-5 tw:py-3 tw:text-[12px] tw:font-bold tw:text-[#597064] tw:hover:bg-[#e1e8df] disabled:tw:opacity-50"
+                >
+                  Cancelar
+                </button>
+                
+                <button
+                  type="submit"
+                  disabled={salvandoEdicao}
+                  className="tw:rounded-lg tw:bg-[#124638] tw:px-5 tw:py-3 tw:text-[12px] tw:font-bold tw:text-white tw:hover:bg-[#1c5a48] disabled:tw:cursor-not-allowed disabled:tw:opacity-60"
+                >
+                  {salvandoEdicao ? 'Salvando...' : 'Salvar alterações'}
+                </button>
+                
+              </div>
+                
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   )
