@@ -1,0 +1,12 @@
+const solicitacoesService = require("../services/solicitacoesService.js");
+
+async function criarSolicitacaoController(req, res) {
+    const { id_doacao, id_instituicao } = req.body;
+    const resultado = await solicitacoesService.criarSolicitacaoService(id_doacao, id_instituicao);
+
+    res.status(201).json(resultado);
+};
+
+module.exports = {
+    criarSolicitacaoController,
+};

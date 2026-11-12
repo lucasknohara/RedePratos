@@ -4,6 +4,7 @@ const errorHandler = require("./middleware/errorHandler.js");
 const usuarioRoutes = require("./routers/usuarioRouter.js");
 const alimentosRoutes = require("./routers/alimentosRouter.js");
 const doacoesRoutes = require("./routers/doacoesRouter.js");
+const solicitacoesRoutes = require("./routers/solicitacoesRouter.js");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/alimentos", alimentosRoutes);
 app.use("/api/doacoes", doacoesRoutes);
+app.use("/api/solicitacoes", solicitacoesRoutes);
 
 app.get("/api/teste", (req, res) => {
     return res.status(200).json({
