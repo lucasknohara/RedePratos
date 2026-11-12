@@ -45,6 +45,25 @@ async function criarSolicitacaoService(id_doacao, id_instituicao) {
     }
 };
 
+async function listarSolicitacoesDoDoadorService(id_usuario) {
+    const idUsuario = Number(id_usuario);
+
+    if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+        throw new AppError("Id do usuário inválido!", 400);
+    }
+
+    const buscarDoadorPorId = await solicitacoesModel.buscarDoadorPorId(idUsuario);
+
+    if (buscarDoadorPorId === null) {
+        throw new AppError("Usuário inválido!", 403);
+    }
+
+    const resultado = await solicitacoesModel.listarSolicitacoesDoDoador(idUsuario);
+
+    return resultado;
+};
+
 module.exports = {
     criarSolicitacaoService,
+    listarSolicitacoesDoDoadorService,
 }
