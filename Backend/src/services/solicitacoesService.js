@@ -63,7 +63,26 @@ async function listarSolicitacoesDoDoadorService(id_usuario) {
     return resultado;
 };
 
+async function listarSolicitacoesDaInstituicaoService(id_instituicao) {
+    const idInstituicao = Number(id_instituicao);
+
+    if (!Number.isInteger(idInstituicao) || idInstituicao <= 0) {
+        throw new AppError("Id da instituição inválida!", 400);
+    }
+
+    const buscarInstituicaoPorId = await solicitacoesModel.buscarInstituicaoPorId(idInstituicao);
+
+    if (buscarInstituicaoPorId === null) {
+        throw new AppError("instituição inválida!", 403);
+    }
+
+    const resultado = await solicitacoesModel.listarSolicitacoesDaInstituicao(idInstituicao);
+
+    return resultado;
+};
+
 module.exports = {
     criarSolicitacaoService,
     listarSolicitacoesDoDoadorService,
+    listarSolicitacoesDaInstituicaoService,
 }

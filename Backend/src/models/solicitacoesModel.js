@@ -57,6 +57,20 @@ async function buscarDoadorPorId(id_usuario) {
     return resultado[0] ?? null;
 };
 
+async function listarSolicitacoesDaInstituicao(id_instituicao) {
+    const [resultado] = await connection.query(`
+		SELECT s.id AS id_solicitacao, s.status, s.criado_em, d.id AS id_doacao, d.quantidade, a.nome, a.categoria, a.validade, a.origem, u.id AS id_doador, u.nome AS nome_doador
+        FROM solicitacoes s
+        INNER JOIN doacoes d ON s.id_doacao = d.id
+        INNER JOIN alimentos a ON d.id_alimento = a.id
+        INNER JOIN usuarios u ON a.id_usuario = u.id
+        WHERE s.id_instituicao = ?
+        ORDER BY s.criado_em DESC
+    `, [id_instituicao]);
+
+    return resultado;
+};
+
 module.exports = {
     criarSolicitacao,
     buscarDoacaoPorId,
@@ -64,4 +78,5 @@ module.exports = {
     buscarSolicitacaoPendente,
     listarSolicitacoesDoDoador,
     buscarDoadorPorId,
+    listarSolicitacoesDaInstituicao,
 };

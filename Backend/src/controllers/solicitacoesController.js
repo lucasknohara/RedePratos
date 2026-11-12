@@ -14,7 +14,15 @@ async function listarSolicitacoesDoDoadorController(req, res) {
     res.status(200).json(resultado);
 };
 
+async function listarSolicitacoesDaInstituicaoController(req, res) {
+    const { id_instituicao } = req.query;
+    const resultado = await solicitacoesService.listarSolicitacoesDaInstituicaoService(id_instituicao);
+
+    res.status(200).json(resultado);
+};
+
 module.exports = {
     criarSolicitacaoController,
     listarSolicitacoesDoDoadorController,
+    listarSolicitacoesDaInstituicaoController,
 };
