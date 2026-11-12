@@ -71,6 +71,76 @@ async function listarSolicitacoesDaInstituicao(id_instituicao) {
     return resultado;
 };
 
+async function buscarSolicitacaoParaAceitar(id_solicitacao) {
+    const [resultado] = await connection.query(`
+        SELECT s.id AS id_solicitacao, s.id_doacao, s.status AS status_solicitacao, d.status AS status_doacao, a.id_usuario AS id_doador
+        FROM solicitacoes s
+        INNER JOIN doacoes d ON d.id = s.id_doacao
+        INNER JOIN alimentos a ON a.id = d.id_alimento
+        WHERE s.id = ?
+        LIMIT 1
+    `, [id_solicitacao]);
+
+    return resultado[0] ?? null;
+};
+
+async function buscarDoacaoParaAtualizar(id_doacao, conn) {
+    const [resultado] = await conn.query(`
+        SELECT d.id, d.status, a.id_usuario 
+        FROM doacoes d
+        INNER JOIN alimentos a ON d.id_alimento = a.id
+        WHERE d.id = ?
+        FOR UPDATE
+    `, [id_doacao]);
+
+    return resultado[0] ?? null;
+};
+
+async function buscarSolicitacaoParaAtualizar(id_solicitacao, conn) {
+    const [resultado] = await conn.query(`
+        SELECT id, id_doacao, status
+        FROM solicitacoes
+        WHERE id = ?
+        FOR UPDATE
+    `, [id_solicitacao]);
+
+    return resultado[0] ?? null;
+};
+
+async function atualizarSolicitacaoAceita(id_solicitacao, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE solicitacoes
+        SET status = 'aceita'
+        WHERE id = ? AND status = 'pendente'
+    `, [id_solicitacao]);
+
+    return resultado.affectedRows;
+};
+
+
+async function encerrarOutrasSolicitacoes(id_doacao, id_solicitacao, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE solicitacoes
+        SET status = 'encerrada'
+        WHERE id_doacao = ?
+        AND id <> ?
+        AND status = 'pendente'
+    `, [id_doacao, id_solicitacao]);
+
+    return resultado.affectedRows;
+};
+
+
+async function reservarDoacao(id_doacao, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE doacoes
+        SET status = 'reservada'
+        WHERE id = ? AND status = 'disponivel'
+    `, [id_doacao]);
+
+    return resultado.affectedRows;
+};
+
 module.exports = {
     criarSolicitacao,
     buscarDoacaoPorId,
@@ -79,4 +149,10 @@ module.exports = {
     listarSolicitacoesDoDoador,
     buscarDoadorPorId,
     listarSolicitacoesDaInstituicao,
+    buscarSolicitacaoParaAceitar,
+    buscarDoacaoParaAtualizar,
+    buscarSolicitacaoParaAtualizar,
+    atualizarSolicitacaoAceita,
+    encerrarOutrasSolicitacoes,
+    reservarDoacao,
 };
