@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { criarDoacaoController } = require("../controllers/doacoesController.js");
+const { criarDoacaoController, listarDoacoesDisponiveisController } = require("../controllers/doacoesController.js");
 
 router.post("/", criarDoacaoController);
+router.get("/", listarDoacoesDisponiveisController);
 
 module.exports = router;

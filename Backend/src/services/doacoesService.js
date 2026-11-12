@@ -39,6 +39,25 @@ async function criarDoacaoService(id_alimento, quantidade, id_usuario) {
     };
 };
 
+async function listarDoacoesDisponiveisService(id_usuario) {
+    const idInstituicao = Number(id_usuario);
+
+    if (!Number.isInteger(idInstituicao) || idInstituicao <= 0) {
+        throw new AppError("Id da instituição inválida!", 400);
+    }  
+
+    const buscarInstiruicaoPorId = await doacoesModel.buscarInstiruicaoPorId(idInstituicao);
+
+    if (buscarInstiruicaoPorId === null) {
+        throw new AppError("Não é uma instituição!", 403);
+    }
+
+    const resultado = await doacoesModel.listarDoacoesDisponiveis();
+
+    return resultado;
+};
+
 module.exports = {
-    criarDoacaoService
+    criarDoacaoService,
+    listarDoacoesDisponiveisService,
 };
