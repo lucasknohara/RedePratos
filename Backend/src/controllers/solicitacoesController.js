@@ -29,9 +29,18 @@ async function aceitarSolicitacaoController(req, res) {
     res.status(200).json(resultado);
 };
 
+async function recusarSolicitacaoController(req, res) {
+    const idSolicitacao = req.params.id;
+    const { id_usuario } = req.body;
+    const resultado = await solicitacoesService.recusarSolicitacaoService(idSolicitacao, id_usuario);
+
+    res.status(200).json(resultado);
+};
+
 module.exports = {
     criarSolicitacaoController,
     listarSolicitacoesDoDoadorController,
     listarSolicitacoesDaInstituicaoController,
     aceitarSolicitacaoController,
+    recusarSolicitacaoController,
 };

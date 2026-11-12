@@ -141,6 +141,16 @@ async function reservarDoacao(id_doacao, conn) {
     return resultado.affectedRows;
 };
 
+async function atualizarSolicitacaoRecusada(id_solicitacao, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE solicitacoes
+        SET status = 'recusada'
+        WHERE id = ? AND status = 'pendente'
+    `, [id_solicitacao]);
+
+    return resultado.affectedRows;
+};
+
 module.exports = {
     criarSolicitacao,
     buscarDoacaoPorId,
@@ -155,4 +165,5 @@ module.exports = {
     atualizarSolicitacaoAceita,
     encerrarOutrasSolicitacoes,
     reservarDoacao,
+    atualizarSolicitacaoRecusada,
 };
