@@ -59,7 +59,7 @@ async function buscarDoadorPorId(id_usuario) {
 
 async function listarSolicitacoesDaInstituicao(id_instituicao) {
     const [resultado] = await connection.query(`
-		SELECT s.id AS id_solicitacao, s.status, s.criado_em, d.id AS id_doacao, d.quantidade, a.nome, a.categoria, a.validade, a.origem, u.id AS id_doador, u.nome AS nome_doador
+		SELECT s.id AS id_solicitacao, s.status, s.criado_em, d.id AS id_doacao, d.quantidade, a.nome, a.categoria, a.validade, a.origem, a.unidade, u.id AS id_doador, u.nome AS nome_doador
         FROM solicitacoes s
         INNER JOIN doacoes d ON s.id_doacao = d.id
         INNER JOIN alimentos a ON d.id_alimento = a.id
