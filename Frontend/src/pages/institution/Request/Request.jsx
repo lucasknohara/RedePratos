@@ -98,8 +98,26 @@ function adaptarSolicitacao(item) {
     doador: item.nome_doador || 'Doador não identificado',
     validade: formatarData(item.validade),
     dataSolicitacao: formatarData(item.criado_em),
-    status: item.status
+    status: item.status,
+    confirmacaoDoador: Boolean(item.confirmacao_doador),
+    confirmacaoInstituicao: Boolean(item.confirmacao_instituicao)
   }
+}
+
+async function buscarSolicitacoes(idInstituicao) {
+  const consulta = new URLSearchParams({
+    id_instituicao: String(idInstituicao)
+  })
+
+  const resultado = await apiRequest(
+    `/api/solicitacoes/instituicao?${consulta.toString()}`
+  )
+
+  if (!Array.isArray(resultado)) {
+    throw new Error('A API retornou uma lista de solicitações inválida.')
+  }
+
+  return resultado.map(adaptarSolicitacao)
 }
 
 function Requests() {
@@ -111,7 +129,9 @@ function Requests() {
   const [filtroAtivo, setFiltroAtivo] = useState('todas')
   const [busca, setBusca] = useState('')
   const [carregando, setCarregando] = useState(true)
+  const [processandoId, setProcessandoId] = useState(null)
   const [erro, setErro] = useState('')
+  const [mensagem, setMensagem] = useState('')
 
   useEffect(() => {
     let ativo = true
@@ -126,20 +146,10 @@ function Requests() {
           throw new Error('Entre com uma conta de instituição para consultar suas solicitações.')
         }
 
-        const consulta = new URLSearchParams({
-          id_instituicao: String(idInstituicao)
-        })
-
-        const resultado = await apiRequest(
-          `/api/solicitacoes/instituicao?${consulta.toString()}`
-        )
-
-        if (!Array.isArray(resultado)) {
-          throw new Error('A API retornou uma lista de solicitações inválida.')
-        }
+        const resultado = await buscarSolicitacoes(idInstituicao)
 
         if (ativo) {
-          setSolicitacoes(resultado.map(adaptarSolicitacao))
+          setSolicitacoes(resultado)
           setErro('')
         }
       } catch (error) {
@@ -157,6 +167,27 @@ function Requests() {
       ativo = false
     }
   }, [idInstituicao, tipoUsuario])
+
+  async function confirmarEntrega(id) {
+    setProcessandoId(id)
+    setErro('')
+    setMensagem('')
+
+    try {
+      const resultado = await apiRequest(`/api/solicitacoes/${id}/confirmar-entrega`, {
+        method: 'PATCH',
+        body: JSON.stringify({ id_usuario: idInstituicao })
+      })
+
+      const listaAtualizada = await buscarSolicitacoes(idInstituicao)
+      setSolicitacoes(listaAtualizada)
+      setMensagem(resultado?.message || 'Confirmação registrada com sucesso.')
+    } catch (error) {
+      setErro(error.message || 'Não foi possível confirmar o recebimento.')
+    } finally {
+      setProcessandoId(null)
+    }
+  }
 
   const totalPendentes = solicitacoes.filter(
     (item) => item.status === 'pendente'
@@ -220,6 +251,18 @@ function Requests() {
           </button>
 
         </header>
+
+        {erro && (
+          <div className="tw:mt-5 tw:rounded-xl tw:border tw:border-[#f0d8d5] tw:bg-[#fff0ee] tw:p-4 tw:text-[11px] tw:text-[#9b5148]">
+            {erro}
+          </div>
+        )}
+
+        {mensagem && (
+          <div className="tw:mt-5 tw:rounded-xl tw:border tw:border-[#dcebdd] tw:bg-[#edf6ed] tw:p-4 tw:text-[11px] tw:text-[#477b57]">
+            {mensagem}
+          </div>
+        )}
 
         {/* APRESENTAÇÃO */}
         <section className="tw:flex tw:items-center tw:justify-between tw:gap-5 tw:py-[35px] tw:max-[650px]:flex-col tw:max-[650px]:items-start">
@@ -503,6 +546,30 @@ function Requests() {
                       </div>
 
                     </div>
+
+                    {solicitacao.status === 'aceita' && (
+                      <div className="tw:mt-4 tw:flex tw:items-center tw:justify-between tw:gap-4 tw:max-[550px]:flex-col tw:max-[550px]:items-start">
+                        <p className="tw:text-[11px] tw:leading-[1.5] tw:text-[#477b57]">
+                          {solicitacao.confirmacaoInstituicao
+                            ? 'Você confirmou o recebimento. Aguardando o doador.'
+                            : solicitacao.confirmacaoDoador
+                              ? 'O doador já confirmou a entrega. Confirme o recebimento para concluir.'
+                              : 'Quando receber o alimento, confirme o recebimento.'}
+                        </p>
+
+                        {!solicitacao.confirmacaoInstituicao && (
+                          <button
+                            type="button"
+                            onClick={() => confirmarEntrega(solicitacao.id)}
+                            disabled={processandoId !== null}
+                            className="tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:gap-2 tw:cursor-pointer tw:rounded-lg tw:bg-[#52745B] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-white tw:transition-colors hover:tw:bg-[#3D6047] disabled:tw:cursor-not-allowed disabled:tw:opacity-60 tw:max-[550px]:w-full"
+                          >
+                            <CheckCircle2 size={16} />
+                            {processandoId === solicitacao.id ? 'Processando...' : 'Confirmar recebimento'}
+                          </button>
+                        )}
+                      </div>
+                    )}
 
                   </article>
                 )

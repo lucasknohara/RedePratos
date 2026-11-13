@@ -80,7 +80,9 @@ function adaptarSolicitacao(item) {
     data: formatarData(item.criado_em),
     regiao: 'Localização não informada',
     status: item.status,
-    categoria: item.categoria
+    categoria: item.categoria,
+    confirmacaoDoador: Boolean(item.confirmacao_doador),
+    confirmacaoInstituicao: Boolean(item.confirmacao_instituicao)
   }
 }
 
@@ -155,6 +157,27 @@ function Requests() {
       setMensagem(resultado?.message || 'Solicitação atualizada com sucesso.')
     } catch (error) {
       setErro(error.message || 'Não foi possível atualizar a solicitação.')
+    } finally {
+      setProcessandoId(null)
+    }
+  }
+
+  async function confirmarEntrega(id) {
+    setProcessandoId(id)
+    setErro('')
+    setMensagem('')
+
+    try {
+      const resultado = await apiRequest(`/api/solicitacoes/${id}/confirmar-entrega`, {
+        method: 'PATCH',
+        body: JSON.stringify({ id_usuario: idUsuario })
+      })
+
+      const listaAtualizada = await buscarSolicitacoes(idUsuario)
+      setSolicitacoes(listaAtualizada)
+      setMensagem(resultado?.message || 'Confirmação registrada com sucesso.')
+    } catch (error) {
+      setErro(error.message || 'Não foi possível confirmar a entrega.')
     } finally {
       setProcessandoId(null)
     }
@@ -481,9 +504,27 @@ function Requests() {
 
                     ) : solicitacao.status === 'aceita' ? (
 
-                      <div className="tw:flex tw:items-center tw:gap-2 tw:text-[11px] tw:leading-[1.5] tw:text-[#477b57]">
-                        <CheckCircle2 size={17} className="tw:shrink-0" />
-                        Reserva confirmada. Aguardando a organização da entrega.
+                      <div className="tw:flex tw:w-full tw:items-center tw:justify-between tw:gap-4 tw:max-[760px]:flex-col tw:max-[760px]:items-start">
+                        <div className="tw:flex tw:items-center tw:gap-2 tw:text-[11px] tw:leading-[1.5] tw:text-[#477b57]">
+                          <CheckCircle2 size={17} className="tw:shrink-0" />
+                          {solicitacao.confirmacaoDoador
+                            ? 'Você confirmou a entrega. Aguardando a instituição.'
+                            : solicitacao.confirmacaoInstituicao
+                              ? 'A instituição já confirmou o recebimento. Confirme a entrega para concluir.'
+                              : 'Reserva confirmada. Confirme quando entregar o alimento.'}
+                        </div>
+
+                        {!solicitacao.confirmacaoDoador && (
+                          <button
+                            type="button"
+                            className="tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:gap-[7px] tw:cursor-pointer tw:rounded-[7px] tw:border tw:border-[#124638] tw:bg-[#124638] tw:px-[14px] tw:py-[10px] tw:text-[10px] tw:font-bold tw:text-white tw:transition-colors tw:hover:bg-[#1d624d] disabled:tw:cursor-not-allowed disabled:tw:opacity-60 tw:max-[760px]:w-full"
+                            onClick={() => confirmarEntrega(solicitacao.id)}
+                            disabled={processandoId !== null}
+                          >
+                            <Check size={16} />
+                            {processandoId === solicitacao.id ? 'Processando...' : 'Confirmar entrega'}
+                          </button>
+                        )}
                       </div>
 
                     ) : solicitacao.status === 'recusada' ? (

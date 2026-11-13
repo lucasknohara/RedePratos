@@ -304,7 +304,7 @@ async function confirmarEntregaService(id_solicitacao, id_usuario) {
             throw new AppError("Doação não está reservada!", 409);
         }
 
-        const idDoador = Number(entrega.id_usuario);
+        const idDoador = Number(entrega.id_doador);
         const idInstituicao = Number(entrega.id_instituicao);
 
         const usuarioEhDoador = idUsuario === idDoador;
