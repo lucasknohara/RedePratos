@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   Bell,
@@ -19,59 +19,15 @@ import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/In
 import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
 import SearchInput from '../../../components/layout/SearchInput/SearchInput.jsx'
 import EmptyState from '../../../components/layout/EmptyState/EmptyState.jsx'
-
-const solicitacoesIniciais = [
-  {
-    id: 1,
-    alimento: 'Arroz',
-    categoria: 'Grãos',
-    quantidade: '5 kg',
-    origem: 'Comércio',
-    regiao: 'Região central',
-    validade: '15/11/2026',
-    dataSolicitacao: '06/11/2026',
-    status: 'pendente'
-  },
-  {
-    id: 2,
-    alimento: 'Leite',
-    categoria: 'Laticínios',
-    quantidade: '6 caixas',
-    origem: 'Comércio',
-    regiao: 'Região sul',
-    validade: '12/11/2026',
-    dataSolicitacao: '05/11/2026',
-    status: 'reservada'
-  },
-  {
-    id: 3,
-    alimento: 'Tomates',
-    categoria: 'Hortifruti',
-    quantidade: '3 kg',
-    origem: 'Residência',
-    regiao: 'Região norte',
-    validade: '10/11/2026',
-    dataSolicitacao: '04/11/2026',
-    status: 'recusada'
-  },
-  {
-    id: 4,
-    alimento: 'Bananas',
-    categoria: 'Hortifruti',
-    quantidade: '4 kg',
-    origem: 'Comércio',
-    regiao: 'Região leste',
-    validade: '09/11/2026',
-    dataSolicitacao: '07/11/2026',
-    status: 'pendente'
-  }
-]
+import { apiRequest } from '../../../services/api.js'
 
 const filtros = [
   { valor: 'todas', label: 'Todas' },
   { valor: 'pendente', label: 'Pendentes' },
-  { valor: 'reservada', label: 'Confirmadas' },
-  { valor: 'recusada', label: 'Recusadas' }
+  { valor: 'aceita', label: 'Confirmadas' },
+  { valor: 'recusada', label: 'Recusadas' },
+  { valor: 'encerrada', label: 'Encerradas' },
+  { valor: 'concluida', label: 'Concluídas' }
 ]
 
 const statusConfig = {
@@ -80,44 +36,148 @@ const statusConfig = {
     descricao: 'Aguardando resposta do doador.',
     icone: Clock3
   },
-  reservada: {
+  aceita: {
     label: 'Reserva confirmada',
-    descricao: 'O doador aceitou sua solicitação.',
+    descricao: 'O doador aceitou sua solicitação. Combine a retirada e confirme o recebimento quando o alimento chegar.',
     icone: CheckCircle2
   },
   recusada: {
     label: 'Recusada',
     descricao: 'O doador não conseguiu atender ao pedido.',
     icone: XCircle
+  },
+  encerrada: {
+    label: 'Encerrada',
+    descricao: 'Outra instituição foi escolhida para receber esta doação.',
+    icone: XCircle
+  },
+  concluida: {
+    label: 'Concluída',
+    descricao: 'A entrega foi confirmada pelo doador e pela instituição.',
+    icone: CheckCircle2
+  }
+}
+
+function obterUsuario() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario') || 'null')
+  } catch {
+    return null
+  }
+}
+
+function formatarData(data) {
+  if (!data) return 'Não informada'
+
+  const valor = String(data).slice(0, 10)
+  const partes = valor.split('-')
+
+  if (partes.length === 3 && partes[0].length === 4) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`
+  }
+
+  return valor
+}
+
+function formatarQuantidade(quantidade, unidade) {
+  const numero = Number(quantidade)
+  const valor = Number.isFinite(numero)
+    ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(numero)
+    : quantidade
+
+  return [valor, unidade].filter(Boolean).join(' ')
+}
+
+function adaptarSolicitacao(item) {
+  return {
+    id: Number(item.id_solicitacao),
+    alimento: item.nome || 'Alimento não identificado',
+    categoria: item.categoria || 'Outros',
+    quantidade: formatarQuantidade(item.quantidade, item.unidade),
+    origem: item.origem || 'Não informada',
+    doador: item.nome_doador || 'Doador não identificado',
+    validade: formatarData(item.validade),
+    dataSolicitacao: formatarData(item.criado_em),
+    status: item.status
   }
 }
 
 function Requests() {
-  const [solicitacoes] = useState(solicitacoesIniciais)
+  const usuario = obterUsuario()
+  const idInstituicao = Number(usuario?.id)
+  const tipoUsuario = usuario?.tipo_usuario
+
+  const [solicitacoes, setSolicitacoes] = useState([])
   const [filtroAtivo, setFiltroAtivo] = useState('todas')
   const [busca, setBusca] = useState('')
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState('')
 
-  // Calcula os indicadores a partir das solicitações.
+  useEffect(() => {
+    let ativo = true
+
+    async function carregarSolicitacoes() {
+      try {
+        if (
+          tipoUsuario !== 'instituicao' ||
+          !Number.isInteger(idInstituicao) ||
+          idInstituicao <= 0
+        ) {
+          throw new Error('Entre com uma conta de instituição para consultar suas solicitações.')
+        }
+
+        const consulta = new URLSearchParams({
+          id_instituicao: String(idInstituicao)
+        })
+
+        const resultado = await apiRequest(
+          `/api/solicitacoes/instituicao?${consulta.toString()}`
+        )
+
+        if (!Array.isArray(resultado)) {
+          throw new Error('A API retornou uma lista de solicitações inválida.')
+        }
+
+        if (ativo) {
+          setSolicitacoes(resultado.map(adaptarSolicitacao))
+          setErro('')
+        }
+      } catch (error) {
+        if (ativo) {
+          setErro(error.message || 'Não foi possível carregar suas solicitações.')
+        }
+      } finally {
+        if (ativo) setCarregando(false)
+      }
+    }
+
+    carregarSolicitacoes()
+
+    return () => {
+      ativo = false
+    }
+  }, [idInstituicao, tipoUsuario])
+
   const totalPendentes = solicitacoes.filter(
     (item) => item.status === 'pendente'
   ).length
 
   const totalConfirmadas = solicitacoes.filter(
-    (item) => item.status === 'reservada'
+    (item) => item.status === 'aceita'
   ).length
 
   const totalRecusadas = solicitacoes.filter(
     (item) => item.status === 'recusada'
   ).length
 
-  // Aplica os filtros de status e busca.
   const solicitacoesFiltradas = solicitacoes.filter((item) => {
     const termoBusca = busca.toLowerCase().trim()
 
     const correspondeBusca =
       item.alimento.toLowerCase().includes(termoBusca) ||
       item.categoria.toLowerCase().includes(termoBusca) ||
-      item.regiao.toLowerCase().includes(termoBusca)
+      item.doador.toLowerCase().includes(termoBusca) ||
+      item.origem.toLowerCase().includes(termoBusca)
 
     const correspondeStatus =
       filtroAtivo === 'todas' || item.status === filtroAtivo
@@ -258,7 +318,7 @@ function Requests() {
           <SearchInput
             value={busca}
             onChange={(event) => setBusca(event.target.value)}
-            placeholder="Buscar por alimento ou região..."
+            placeholder="Buscar por alimento, categoria ou doador..."
             ariaLabel="Buscar solicitações"
           />
 
@@ -306,7 +366,19 @@ function Requests() {
             </p>
           </div>
 
-          {solicitacoesFiltradas.length > 0 ? (
+          {carregando ? (
+
+            <div className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-6 tw:text-center tw:text-[12px] tw:text-[#78847b]">
+              Carregando suas solicitações...
+            </div>
+
+          ) : erro ? (
+
+            <div className="tw:rounded-xl tw:border tw:border-[#f0d8d5] tw:bg-[#fff0ee] tw:p-5 tw:text-[12px] tw:text-[#9b5148]">
+              {erro}
+            </div>
+
+          ) : solicitacoesFiltradas.length > 0 ? (
 
             <div className="tw:flex tw:flex-col tw:gap-4">
 
@@ -359,7 +431,7 @@ function Requests() {
                           icon={IconeStatus}
                           size="institution"
                           variant={
-                            solicitacao.status === 'reservada'
+                            solicitacao.status === 'aceita'
                               ? 'institution-reserved'
                               : solicitacao.status === 'recusada'
                                 ? 'institution-rejected'
@@ -377,11 +449,11 @@ function Requests() {
 
                         <div>
                           <small className="tw:block tw:text-[9px] tw:text-[#929b93]">
-                            Região
+                            Doador
                           </small>
 
                           <span className="tw:text-[10px] tw:font-semibold tw:text-[#65746a]">
-                            {solicitacao.regiao}
+                            {solicitacao.doador}
                           </span>
                         </div>
                       </div>
