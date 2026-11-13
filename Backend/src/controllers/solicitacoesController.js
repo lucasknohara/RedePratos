@@ -37,10 +37,19 @@ async function recusarSolicitacaoController(req, res) {
     res.status(200).json(resultado);
 };
 
+async function confirmarEntregaController(req, res) {
+    const idSolicitacao = req.params.id;
+    const { id_usuario } = req.body;
+    const resultado = await solicitacoesService.confirmarEntregaService(idSolicitacao, id_usuario);
+
+    res.status(200).json(resultado);
+};
+
 module.exports = {
     criarSolicitacaoController,
     listarSolicitacoesDoDoadorController,
     listarSolicitacoesDaInstituicaoController,
     aceitarSolicitacaoController,
     recusarSolicitacaoController,
+    confirmarEntregaController
 };

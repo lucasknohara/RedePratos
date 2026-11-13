@@ -151,6 +151,70 @@ async function atualizarSolicitacaoRecusada(id_solicitacao, conn) {
     return resultado.affectedRows;
 };
 
+async function buscarDadosEntregaParaAtualizar(id_solicitacao, conn) {
+    const [resultado] = await conn.query(`
+        SELECT s.id AS id_solicitacao, s.status AS status_solicitacao, s.id_instituicao, s.confirmacao_doador, s.confirmacao_instituicao, d.id AS id_doacao, d.status AS status_doacao, d.quantidade AS quantidade_doacao, d.id_alimento, a.id_usuario AS id_doador, a.quantidade AS quantidade_alimento
+        FROM solicitacoes s
+        INNER JOIN doacoes d ON s.id_doacao = d.id
+        INNER JOIN alimentos a ON d.id_alimento = a.id
+        WHERE s.id = ?
+        LIMIT 1
+        FOR UPDATE
+    `, [id_solicitacao]);
+
+    return resultado[0] ?? null;
+};
+
+async function confirmarEntregaDoador(id_solicitacao, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE solicitacoes
+        SET confirmacao_doador = TRUE
+        WHERE id = ? AND confirmacao_doador = FALSE AND status = 'aceita'
+    `, [id_solicitacao]);
+
+    return resultado.affectedRows;
+};
+
+async function confirmarEntregaInstituicao(id_solicitacao, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE solicitacoes
+        SET confirmacao_instituicao = TRUE
+        WHERE id = ? AND confirmacao_instituicao = FALSE AND status = 'aceita'
+    `, [id_solicitacao]);
+
+    return resultado.affectedRows;
+};
+
+async function concluirSolicitacao(id_solicitacao, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE solicitacoes
+        SET status = 'concluida'
+        WHERE id = ? AND confirmacao_instituicao = TRUE AND confirmacao_doador = TRUE
+    `, [id_solicitacao]);
+
+    return resultado.affectedRows;
+};
+
+async function concluirDoacao(id_doacao, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE doacoes
+        SET status = 'concluida'
+        WHERE id = ? AND status = 'reservada'
+    `, [id_doacao]);
+
+    return resultado.affectedRows;
+};
+
+async function descontarEstoque(id_alimento, quantidade, conn) {
+    const [resultado] = await conn.query(`
+        UPDATE alimentos
+        SET quantidade = quantidade - ?
+        WHERE id = ? AND quantidade >= ? AND ? > 0
+    `, [quantidade, id_alimento, quantidade, quantidade]);
+
+    return resultado.affectedRows;
+};
+
 module.exports = {
     criarSolicitacao,
     buscarDoacaoPorId,
@@ -166,4 +230,10 @@ module.exports = {
     encerrarOutrasSolicitacoes,
     reservarDoacao,
     atualizarSolicitacaoRecusada,
+    buscarDadosEntregaParaAtualizar,
+    confirmarEntregaDoador,
+    confirmarEntregaInstituicao,
+    concluirDoacao,
+    concluirSolicitacao,
+    descontarEstoque
 };

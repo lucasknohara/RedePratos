@@ -270,10 +270,150 @@ async function recusarSolicitacaoService(id_solicitacao, id_usuario) {
     }
 };
 
+async function confirmarEntregaService(id_solicitacao, id_usuario) {
+    const idSolicitacao = Number(id_solicitacao);
+    const idUsuario = Number(id_usuario);
+
+    if (!Number.isInteger(idSolicitacao) || idSolicitacao <= 0) {
+        throw new AppError("Id da solicitação inválida!", 400);
+    }
+
+    if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+        throw new AppError("Id do usuário inválido!", 400);
+    }
+
+    const conn = await pool.getConnection();
+
+    let transacaoIniciada = false;
+
+    try {
+        await conn.beginTransaction();
+        transacaoIniciada = true;
+
+        const entrega = await solicitacoesModel.buscarDadosEntregaParaAtualizar(idSolicitacao, conn);
+
+        if (entrega === null) {
+            throw new AppError("Solicitação não encontrada!", 404);
+        }
+
+        if (entrega.status_solicitacao !== "aceita") {
+            throw new AppError("Solicitação não está aceita!", 409);
+        }
+
+        if (entrega.status_doacao !== "reservada") {
+            throw new AppError("Doação não está reservada!", 409);
+        }
+
+        const idDoador = Number(entrega.id_usuario);
+        const idInstituicao = Number(entrega.id_instituicao);
+
+        const usuarioEhDoador = idUsuario === idDoador;
+        const usuarioEhInstituicao = idUsuario === idInstituicao;
+
+        if (!usuarioEhDoador && !usuarioEhInstituicao) {
+            throw new AppError("Usuário não participa desta entrega!", 403);
+        }
+
+        let confirmar;
+        let confirmacaoDoador = Boolean(entrega.confirmacao_doador);
+        let confirmacaoInstituicao = Boolean(entrega.confirmacao_instituicao);
+
+        if (usuarioEhDoador) {
+
+            if (confirmacaoDoador) {
+                throw new AppError("Doador já confirmou esta entrega!", 409);
+            }
+
+            confirmar = await solicitacoesModel.confirmarEntregaDoador(idSolicitacao, conn);
+
+            if (confirmar !== 1) {
+                throw new AppError("Não foi possível registrar a confirmação do doador!", 409);
+            }
+
+            confirmacaoDoador = true;
+
+        } else {
+
+            if (confirmacaoInstituicao) {
+                throw new AppError("Instituição já confirmou esta entrega!", 409);
+            }
+
+            confirmar = await solicitacoesModel.confirmarEntregaInstituicao(idSolicitacao, conn);
+
+            if (confirmar !== 1) {
+                throw new AppError("Não foi possível registrar a confirmação da instituição!", 409);
+            }
+
+            confirmacaoInstituicao = true;
+        }
+
+        if (confirmacaoDoador && confirmacaoInstituicao) {
+
+            const idDoacao = Number(entrega.id_doacao);
+            const idAlimento = Number(entrega.id_alimento);
+            const quantidadeDoacao = Number(entrega.quantidade_doacao);
+
+            if (!Number.isFinite(quantidadeDoacao) || quantidadeDoacao <= 0) {
+                throw new AppError("Quantidade da doação inválida!", 409);
+            }
+
+            const estoqueAtualizado = await solicitacoesModel.descontarEstoque(idAlimento, quantidadeDoacao, conn);
+
+            if (estoqueAtualizado !== 1) {
+                throw new AppError("Estoque insuficiente ou alimento não encontrado!", 409);
+            }
+
+            const solicitacaoConcluida = await solicitacoesModel.concluirSolicitacao(idSolicitacao, conn);
+
+            if (solicitacaoConcluida !== 1) {
+                throw new AppError("Não foi possível concluir a solicitação!", 409);
+            }
+
+            const doacaoConcluida = await solicitacoesModel.concluirDoacao(idDoacao, conn);
+
+            if (doacaoConcluida !== 1) {
+                throw new AppError("Não foi possível concluir a doação!", 409);
+            }
+
+            await conn.commit();
+            transacaoIniciada = false;
+
+            return {
+                message: "Entrega concluída! Estoque atualizado com sucesso!"
+            };
+        }
+
+        await conn.commit();
+        transacaoIniciada = false;
+
+        return {
+            message: usuarioEhDoador
+                ? "Confirmação do doador registrada! Aguardando a instituição."
+                : "Confirmação da instituição registrada! Aguardando o doador."
+        };
+
+    } catch (error) {
+
+        if (transacaoIniciada) {
+            try {
+                await conn.rollback();
+            } catch (erroRollback) {
+
+            }
+        }
+
+        throw error;
+
+    } finally {
+        conn.release();
+    }
+};
+
 module.exports = {
     criarSolicitacaoService,
     listarSolicitacoesDoDoadorService,
     listarSolicitacoesDaInstituicaoService,
     aceitarSolicitacaoService,
     recusarSolicitacaoService,
+    confirmarEntregaService,
 };
