@@ -316,6 +316,33 @@ function MyDonations() {
 
             </div>
 
+            {/* FILTROS */}
+            <div className="tw:flex tw:items-center tw:gap-2 tw:overflow-x-auto tw:border-b tw:border-[#edf0e9] tw:py-5">
+
+              {filtros.map((item) => (
+
+                <button
+                  key={item.valor}
+                  type="button"
+                  className={`
+                    tw:shrink-0 tw:cursor-pointer
+                    tw:rounded-full tw:border
+                    tw:px-[13px] tw:py-[9px]
+                    tw:text-[10px] tw:transition-colors tw:duration-200
+                    ${filtro === item.valor
+                      ? 'tw:border-[#124638] tw:bg-[#124638] tw:text-white'
+                      : 'tw:border-[#e6eae3] tw:bg-white tw:text-[#718076] tw:hover:bg-[#f1f5ee]'
+                    }
+                  `}
+                  onClick={() => setFiltro(item.valor)}
+                >
+                  {item.nome}
+                </button>
+
+              ))}
+
+            </div>
+
             {/* CABEÇALHO DA LISTA */}
             <div className="
               tw:grid tw:grid-cols-[1.2fr_0.8fr_1.3fr_1fr]

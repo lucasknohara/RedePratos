@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   Bell,
@@ -17,64 +17,147 @@ import {
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
 import EmptyState from '../../../components/layout/EmptyState/EmptyState.jsx'
-
-const solicitacoesIniciais = [
-  {
-    id: 1,
-    instituicao: 'Instituição Esperança',
-    alimento: 'Arroz',
-    imagem: '/icons/arroz.svg',
-    quantidade: '5 kg',
-    data: '06/11/2026',
-    regiao: 'Vila Mariana',
-    status: 'pendente'
-  },
-  {
-    id: 2,
-    instituicao: 'Associação Mãos que Ajudam',
-    alimento: 'Tomate',
-    imagem: '/icons/tomate.svg',
-    quantidade: '4 unidades',
-    data: '05/11/2026',
-    regiao: 'Saúde',
-    status: 'pendente'
-  },
-  {
-    id: 3,
-    instituicao: 'Centro Comunitário Vida',
-    alimento: 'Leite',
-    imagem: '/icons/leite.svg',
-    quantidade: '6 caixas',
-    data: '04/11/2026',
-    regiao: 'Ipiranga',
-    status: 'reservada'
-  }
-]
+import { apiRequest } from '../../../services/api.js'
 
 const filtros = [
   { valor: 'todas', nome: 'Todas' },
   { valor: 'pendente', nome: 'Pendentes' },
-  { valor: 'reservada', nome: 'Reservadas' },
-  { valor: 'recusada', nome: 'Recusadas' }
+  { valor: 'aceita', nome: 'Reservadas' },
+  { valor: 'recusada', nome: 'Recusadas' },
+  { valor: 'encerrada', nome: 'Encerradas' },
+  { valor: 'concluida', nome: 'Concluídas' }
 ]
 
-function Requests() {
-  const [solicitacoes, setSolicitacoes] = useState(solicitacoesIniciais)
-  const [filtro, setFiltro] = useState('todas')
+function obterUsuario() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario') || 'null')
+  } catch {
+    return null
+  }
+}
 
-  function atualizarStatus(id, novoStatus) {
-    setSolicitacoes((listaAtual) =>
-      listaAtual.map((solicitacao) => {
-        if (solicitacao.id === id) {
-          return {
-            ...solicitacao,
-            status: novoStatus
-          }
+function formatarData(data) {
+  if (!data) return 'Data não informada'
+
+  const valor = String(data).slice(0, 10)
+  const partes = valor.split('-')
+
+  if (partes.length === 3 && partes[0].length === 4) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`
+  }
+
+  return valor
+}
+
+function formatarQuantidade(quantidade, unidade) {
+  const numero = Number(quantidade)
+  const valor = Number.isFinite(numero)
+    ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(numero)
+    : quantidade
+
+  return [valor, unidade].filter(Boolean).join(' ')
+}
+
+function imagemDoAlimento(nome) {
+  const alimento = String(nome || '').toLowerCase()
+
+  if (alimento.includes('tomate')) return '/icons/tomate.svg'
+  if (alimento.includes('arroz')) return '/icons/arroz.svg'
+  if (alimento.includes('leite')) return '/icons/leite.svg'
+  if (alimento.includes('banana')) return '/icons/banana.svg'
+
+  return '/icons/arroz.svg'
+}
+
+function adaptarSolicitacao(item) {
+  return {
+    id: Number(item.id_solicitacao),
+    idDoacao: Number(item.id_doacao),
+    instituicao: item.nome_instituicao || 'Instituição não identificada',
+    alimento: item.nome || 'Alimento',
+    imagem: imagemDoAlimento(item.nome),
+    quantidade: formatarQuantidade(item.quantidade, item.unidade),
+    data: formatarData(item.criado_em),
+    regiao: 'Localização não informada',
+    status: item.status,
+    categoria: item.categoria
+  }
+}
+
+async function buscarSolicitacoes(idUsuario) {
+  const params = new URLSearchParams({ id_usuario: String(idUsuario) })
+  const resultado = await apiRequest(`/api/solicitacoes/doador?${params.toString()}`)
+
+  if (!Array.isArray(resultado)) {
+    throw new Error('A API retornou uma lista de solicitações inválida.')
+  }
+
+  return resultado.map(adaptarSolicitacao)
+}
+
+function Requests() {
+  const usuario = obterUsuario()
+  const idUsuario = Number(usuario?.id)
+
+  const [solicitacoes, setSolicitacoes] = useState([])
+  const [filtro, setFiltro] = useState('todas')
+  const [carregando, setCarregando] = useState(true)
+  const [processandoId, setProcessandoId] = useState(null)
+  const [erro, setErro] = useState('')
+  const [mensagem, setMensagem] = useState('')
+
+  useEffect(() => {
+    let ativo = true
+
+    async function carregarSolicitacoes() {
+      try {
+        if (usuario?.tipo_usuario !== 'doador' ||
+            !Number.isInteger(idUsuario) ||
+            idUsuario <= 0) {
+          throw new Error('Entre com uma conta de doador para consultar as solicitações.')
         }
 
-        return solicitacao
+        const resultado = await buscarSolicitacoes(idUsuario)
+
+        if (ativo) {
+          setSolicitacoes(resultado)
+          setErro('')
+        }
+      } catch (error) {
+        if (ativo) {
+          setErro(error.message || 'Não foi possível carregar as solicitações.')
+        }
+      } finally {
+        if (ativo) setCarregando(false)
+      }
+    }
+
+    carregarSolicitacoes()
+
+    return () => {
+      ativo = false
+    }
+  }, [idUsuario, usuario?.tipo_usuario])
+
+  async function atualizarSolicitacao(id, acao) {
+    setProcessandoId(id)
+    setErro('')
+    setMensagem('')
+
+    try {
+      const resultado = await apiRequest(`/api/solicitacoes/${id}/${acao}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ id_usuario: idUsuario })
       })
-    )
+
+      const listaAtualizada = await buscarSolicitacoes(idUsuario)
+      setSolicitacoes(listaAtualizada)
+      setMensagem(resultado?.message || 'Solicitação atualizada com sucesso.')
+    } catch (error) {
+      setErro(error.message || 'Não foi possível atualizar a solicitação.')
+    } finally {
+      setProcessandoId(null)
+    }
   }
 
   const solicitacoesFiltradas = solicitacoes.filter((solicitacao) => {
@@ -86,7 +169,7 @@ function Requests() {
   ).length
 
   const reservadas = solicitacoes.filter(
-    (solicitacao) => solicitacao.status === 'reservada'
+    (solicitacao) => solicitacao.status === 'aceita'
   ).length
 
   return (
@@ -120,6 +203,18 @@ function Requests() {
         </header>
 
         <div className="tw:pt-[35px] tw:pb-10">
+
+          {erro && (
+            <div className="tw:mb-5 tw:rounded-xl tw:border tw:border-[#f0d8d5] tw:bg-[#fff0ee] tw:p-4 tw:text-[11px] tw:text-[#9b5148]">
+              {erro}
+            </div>
+          )}
+
+          {mensagem && (
+            <div className="tw:mb-5 tw:rounded-xl tw:border tw:border-[#dcebdd] tw:bg-[#edf6ed] tw:p-4 tw:text-[11px] tw:text-[#477b57]">
+              {mensagem}
+            </div>
+          )}
 
           {/* TÍTULO */}
           <section className="tw:mb-7">
@@ -266,7 +361,11 @@ function Requests() {
             {/* SOLICITAÇÕES */}
             <div className="tw:flex tw:flex-col tw:gap-[14px] tw:pt-5">
 
-              {solicitacoesFiltradas.map((solicitacao) => (
+              {carregando ? (
+                <p className="tw:py-8 tw:text-center tw:text-[12px] tw:text-[#78847b]">
+                  Carregando solicitações...
+                </p>
+              ) : solicitacoesFiltradas.map((solicitacao) => (
 
                 <article
                   className="tw:rounded-[10px] tw:border tw:border-[#e9ebe4] tw:p-[19px] tw:max-[400px]:p-[14px]"
@@ -360,43 +459,55 @@ function Requests() {
                           <button
                             type="button"
                             className="tw:flex tw:items-center tw:justify-center tw:gap-[7px] tw:cursor-pointer tw:rounded-[7px] tw:border tw:border-[#e9d9d5] tw:bg-white tw:px-[14px] tw:py-[10px] tw:text-[10px] tw:font-bold tw:text-[#a75e53] tw:transition-colors tw:hover:bg-[#fdf1ef] tw:max-[760px]:flex-1 tw:max-[400px]:px-2 tw:max-[400px]:text-[9px]"
-                            onClick={() =>
-                              atualizarStatus(solicitacao.id, 'recusada')
-                            }
+                            onClick={() => atualizarSolicitacao(solicitacao.id, 'recusar')}
+                            disabled={processandoId !== null}
                           >
                             <X size={16} />
-                            Recusar
+                            {processandoId === solicitacao.id ? 'Processando...' : 'Recusar'}
                           </button>
 
                           <button
                             type="button"
                             className="tw:flex tw:items-center tw:justify-center tw:gap-[7px] tw:cursor-pointer tw:rounded-[7px] tw:border tw:border-[#124638] tw:bg-[#124638] tw:px-[14px] tw:py-[10px] tw:text-[10px] tw:font-bold tw:text-white tw:transition-colors tw:hover:bg-[#1d624d] tw:max-[760px]:flex-1 tw:max-[400px]:px-2 tw:max-[400px]:text-[9px]"
-                            onClick={() =>
-                              atualizarStatus(solicitacao.id, 'reservada')
-                            }
+                            onClick={() => atualizarSolicitacao(solicitacao.id, 'aceitar')}
+                            disabled={processandoId !== null}
                           >
                             <Check size={16} />
-                            Aceitar solicitação
+                            {processandoId === solicitacao.id ? 'Processando...' : 'Aceitar solicitação'}
                           </button>
 
                         </div>
                       </>
 
-                    ) : solicitacao.status === 'reservada' ? (
+                    ) : solicitacao.status === 'aceita' ? (
 
                       <div className="tw:flex tw:items-center tw:gap-2 tw:text-[11px] tw:leading-[1.5] tw:text-[#477b57]">
                         <CheckCircle2 size={17} className="tw:shrink-0" />
                         Reserva confirmada. Aguardando a organização da entrega.
                       </div>
 
-                    ) : (
+                    ) : solicitacao.status === 'recusada' ? (
 
                       <div className="tw:flex tw:items-center tw:gap-2 tw:text-[11px] tw:leading-[1.5] tw:text-[#b15e51]">
                         <XCircle size={17} className="tw:shrink-0" />
                         Esta solicitação foi recusada.
                       </div>
 
-                    )}
+                    ) : solicitacao.status === 'encerrada' ? (
+
+                      <div className="tw:flex tw:items-center tw:gap-2 tw:text-[11px] tw:leading-[1.5] tw:text-[#78847b]">
+                        <XCircle size={17} className="tw:shrink-0" />
+                        Outra instituição foi escolhida para esta doação.
+                      </div>
+
+                    ) : solicitacao.status === 'concluida' ? (
+
+                      <div className="tw:flex tw:items-center tw:gap-2 tw:text-[11px] tw:leading-[1.5] tw:text-[#477b57]">
+                        <CheckCircle2 size={17} className="tw:shrink-0" />
+                        Entrega concluída.
+                      </div>
+
+                    ) : null}
 
                   </div>
 
@@ -405,7 +516,7 @@ function Requests() {
               ))}
 
               {/* LISTA VAZIA */}
-              {solicitacoesFiltradas.length === 0 && (
+              {!carregando && solicitacoesFiltradas.length === 0 && (
 
                 <EmptyState
                   icon={Package}

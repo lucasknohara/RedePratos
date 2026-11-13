@@ -11,6 +11,14 @@ const statusConfig = {
     nome: 'Reserva confirmada',
     classes: 'tw:bg-[#e5f1e8] tw:text-[#438358]'
   },
+  aceita: {
+    nome: 'Reservada',
+    classes: 'tw:bg-[#e5f1e8] tw:text-[#438358]'
+  },
+  encerrada: {
+    nome: 'Encerrada',
+    classes: 'tw:bg-[#eef0ed] tw:text-[#718076]'
+  },
   recusada: {
     nome: 'Recusada',
     classes: 'tw:bg-[#f8e9e6] tw:text-[#b15e51]'
