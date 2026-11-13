@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { criarDoacaoController, listarDoacoesDisponiveisController } = require("../controllers/doacoesController.js");
+const { criarDoacaoController, listarDoacoesDisponiveisController, listarDoacoesDoDoadorController } = require("../controllers/doacoesController.js");
 
 router.post("/", criarDoacaoController);
-router.get("/doador", listarDoacoesDisponiveisController);
 router.get("/", listarDoacoesDisponiveisController);
+router.get("/doador", listarDoacoesDoDoadorController);
 
 module.exports = router;
