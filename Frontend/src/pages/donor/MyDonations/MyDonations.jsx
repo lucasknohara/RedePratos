@@ -60,10 +60,12 @@ function imagemDoAlimento(nome) {
 }
 
 function adaptarDoacao(doacao) {
-  const status = doacao.status === 'disponivel' &&
-    Number(doacao.solicitacoes_pendentes) > 0
-    ? 'pendente'
-    : doacao.status
+  const solicitacoesPendentes = Number(doacao.solicitacoes_pendentes) || 0
+
+  const statusExibicao =
+    doacao.status === 'disponivel' && solicitacoesPendentes > 0
+      ? 'pendente'
+      : doacao.status
 
   return {
     id: Number(doacao.id),
@@ -74,9 +76,19 @@ function adaptarDoacao(doacao) {
     data: formatarData(doacao.criado_em),
     regiao: doacao.regiao || 'Localização não informada',
     instituicao: doacao.instituicoes || 'Nenhuma instituição ainda',
-    status
+    solicitacoesPendentes,
+    status: doacao.status,
+    statusExibicao
   }
 }
+
+const filtros = [
+  { valor: 'todas', nome: 'Todas' },
+  { valor: 'disponivel', nome: 'Disponíveis' },
+  { valor: 'pendente', nome: 'Aguardando resposta' },
+  { valor: 'reservada', nome: 'Reservadas' },
+  { valor: 'concluida', nome: 'Concluídas' }
+]
 
 function MyDonations() {
   const [filtro, setFiltro] = useState('todas')
@@ -129,9 +141,16 @@ function MyDonations() {
     }
   }, [])
 
-  const doacoesFiltradas = doacoes.filter((doacao) => (
-    filtro === 'todas' || doacao.status === filtro
-  ))
+  const doacoesFiltradas = doacoes.filter((doacao) => {
+    if (filtro === 'todas') return true
+
+    if (filtro === 'pendente') {
+      return doacao.status === 'disponivel' &&
+        doacao.solicitacoesPendentes > 0
+    }
+
+    return doacao.status === filtro
+  })
 
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
@@ -260,7 +279,7 @@ function MyDonations() {
                 </span>
 
                 <strong className="tw:my-[5px] tw:block tw:text-[23px] tw:text-[#244d39]">
-                  {doacoes.filter(d => d.status === 'pendente').length}
+                  {doacoes.reduce((total, doacao) => total + doacao.solicitacoesPendentes, 0)}
                 </strong>
 
                 <small className="tw:block tw:text-[9px] tw:text-[#9aa29b]">
@@ -444,17 +463,17 @@ function MyDonations() {
                   {/* STATUS */}
                   <div className="tw:max-[760px]:col-start-2 tw:max-[760px]:row-start-2 tw:max-[760px]:justify-self-end">
                     <StatusBadge
-                      status={doacao.status}
+                      status={doacao.statusExibicao}
                       size="compact"
                       label={
-                        doacao.status === 'pendente'
-                          ? 'Solicitação recebida'
-                          : doacao.status === 'reservada'
+                        doacao.statusExibicao === 'pendente'
+                          ? 'Solicitações recebidas'
+                          : doacao.statusExibicao === 'reservada'
                             ? 'Reservada'
                             : undefined
                       }
                       variant={
-                        doacao.status === 'reservada' ? 'blue' : undefined
+                        doacao.statusExibicao === 'reservada' ? 'blue' : undefined
                       }
                     />
                   </div>
@@ -464,7 +483,7 @@ function MyDonations() {
               ))}
 
               {/* LISTA VAZIA */}
-              {!carregando && doacoesFiltradas.length === 0 && (
+              {!carregando && !erro && doacoesFiltradas.length === 0 && (
 
                 <EmptyState
                   icon={Package}
