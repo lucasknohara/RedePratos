@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   Bell,
@@ -15,68 +15,123 @@ import { Link } from 'react-router-dom'
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
 import StatusBadge from '../../../components/layout/StatusBadge/StatusBadge.jsx'
 import EmptyState from '../../../components/layout/EmptyState/EmptyState.jsx'
+import { apiRequest } from '../../../services/api.js'
 
-const doacoes = [
-  {
-    id: 1,
-    nome: 'Arroz',
-    imagem: '/icons/arroz.svg',
-    quantidade: '5 kg',
-    validade: '20/11/2026',
-    data: '05/11/2026',
-    regiao: 'Vila Mariana',
-    instituicao: 'Nenhuma instituição ainda',
-    status: 'disponivel'
-  },
-  {
-    id: 2,
-    nome: 'Tomate',
-    imagem: '/icons/tomate.svg',
-    quantidade: '4 unidades',
-    validade: '08/11/2026',
-    data: '04/11/2026',
-    regiao: 'Saúde',
-    instituicao: 'Instituição Esperança',
-    status: 'pendente'
-  },
-  {
-    id: 3,
-    nome: 'Leite',
-    imagem: '/icons/leite.svg',
-    quantidade: '6 caixas',
-    validade: '15/11/2026',
-    data: '03/11/2026',
-    regiao: 'Ipiranga',
-    instituicao: 'Casa Solidária',
-    status: 'reservada'
-  },
-  {
-    id: 4,
-    nome: 'Banana',
-    imagem: '/icons/banana.svg',
-    quantidade: '3 kg',
-    validade: '04/11/2026',
-    data: '01/11/2026',
-    regiao: 'Moema',
-    instituicao: 'ONG Mãos Abertas',
-    status: 'concluida'
+function obterUsuario() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario') || 'null')
+  } catch {
+    return null
   }
-]
+}
 
-const filtros = [
-  { valor: 'todas', nome: 'Todas' },
-  { valor: 'disponivel', nome: 'Disponíveis' },
-  { valor: 'pendente', nome: 'Aguardando resposta' },
-  { valor: 'reservada', nome: 'Reservadas' },
-  { valor: 'concluida', nome: 'Concluídas' }
-]
+function formatarData(data) {
+  if (!data) return 'Não informada'
+
+  const valor = String(data).slice(0, 10)
+  const partes = valor.split('-')
+
+  if (partes.length === 3 && partes[0].length === 4) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`
+  }
+
+  return valor
+}
+
+function formatarQuantidade(quantidade, unidade) {
+  const numero = Number(quantidade)
+
+  const valor = Number.isFinite(numero)
+    ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(numero)
+    : quantidade
+
+  return [valor, unidade].filter(Boolean).join(' ')
+}
+
+function imagemDoAlimento(nome) {
+  const alimento = String(nome || '').toLowerCase()
+
+  if (alimento.includes('tomate')) return '/icons/tomate.svg'
+  if (alimento.includes('arroz')) return '/icons/arroz.svg'
+  if (alimento.includes('leite')) return '/icons/leite.svg'
+  if (alimento.includes('banana')) return '/icons/banana.svg'
+
+  return '/icons/arroz.svg'
+}
+
+function adaptarDoacao(doacao) {
+  const status = doacao.status === 'disponivel' &&
+    Number(doacao.solicitacoes_pendentes) > 0
+    ? 'pendente'
+    : doacao.status
+
+  return {
+    id: Number(doacao.id),
+    nome: doacao.nome || 'Alimento',
+    imagem: doacao.imagem || imagemDoAlimento(doacao.nome),
+    quantidade: formatarQuantidade(doacao.quantidade, doacao.unidade),
+    validade: formatarData(doacao.validade),
+    data: formatarData(doacao.criado_em),
+    regiao: doacao.regiao || 'Localização não informada',
+    instituicao: doacao.instituicoes || 'Nenhuma instituição ainda',
+    status
+  }
+}
 
 function MyDonations() {
   const [filtro, setFiltro] = useState('todas')
+  const [doacoes, setDoacoes] = useState([])
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState('')
 
-  const doacoesFiltradas = doacoes.filter((doacao) => {
-    return filtro === 'todas' || doacao.status === filtro
-  })
+  useEffect(() => {
+    let ativo = true
+
+    async function carregarDoacoes() {
+      try {
+        const usuario = obterUsuario()
+        const idUsuario = Number(usuario?.id)
+
+        if (usuario?.tipo_usuario !== 'doador' ||
+            !Number.isInteger(idUsuario) ||
+            idUsuario <= 0) {
+          throw new Error('Entre com uma conta de doador para consultar suas doações.')
+        }
+
+        const params = new URLSearchParams({
+          id_usuario: String(idUsuario)
+        })
+
+        const resultado = await apiRequest(
+          `/api/doacoes/doador?${params.toString()}`
+        )
+
+        if (!Array.isArray(resultado)) {
+          throw new Error('A API retornou uma lista de doações inválida.')
+        }
+
+        if (ativo) {
+          setDoacoes(resultado.map(adaptarDoacao))
+        }
+      } catch (error) {
+        if (ativo) {
+          setErro(error.message || 'Não foi possível carregar suas doações.')
+        }
+      } finally {
+        if (ativo) setCarregando(false)
+      }
+    }
+
+    carregarDoacoes()
+
+    return () => {
+      ativo = false
+    }
+  }, [])
+
+  const doacoesFiltradas = doacoes.filter((doacao) => (
+    filtro === 'todas' || doacao.status === filtro
+  ))
 
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
@@ -109,6 +164,11 @@ function MyDonations() {
         </header>
 
         <div className="tw:pt-[35px] tw:pb-10">
+          {erro && (
+            <div className="tw:mb-5 tw:rounded-xl tw:border tw:border-[#f0d8d5] tw:bg-[#fff0ee] tw:p-4 tw:text-[11px] tw:text-[#9b5148]">
+              {erro}
+            </div>
+          )}
 
           {/* TÍTULO */}
           <section className="tw:mb-7 tw:flex tw:items-center tw:justify-between tw:gap-5 tw:max-[760px]:items-start tw:max-[760px]:flex-col">
@@ -256,33 +316,6 @@ function MyDonations() {
 
             </div>
 
-            {/* FILTROS */}
-            <div className="tw:flex tw:items-center tw:gap-2 tw:overflow-x-auto tw:border-b tw:border-[#edf0e9] tw:py-5">
-
-              {filtros.map((item) => (
-
-                <button
-                  key={item.valor}
-                  type="button"
-                  className={`
-                    tw:shrink-0 tw:cursor-pointer
-                    tw:rounded-full tw:border
-                    tw:px-[13px] tw:py-[9px]
-                    tw:text-[10px] tw:transition-colors tw:duration-200
-                    ${filtro === item.valor
-                      ? 'tw:border-[#124638] tw:bg-[#124638] tw:text-white'
-                      : 'tw:border-[#e6eae3] tw:bg-white tw:text-[#718076] tw:hover:bg-[#f1f5ee]'
-                    }
-                  `}
-                  onClick={() => setFiltro(item.valor)}
-                >
-                  {item.nome}
-                </button>
-
-              ))}
-
-            </div>
-
             {/* CABEÇALHO DA LISTA */}
             <div className="
               tw:grid tw:grid-cols-[1.2fr_0.8fr_1.3fr_1fr]
@@ -305,7 +338,11 @@ function MyDonations() {
             {/* REGISTROS */}
             <div>
 
-              {doacoesFiltradas.map((doacao) => (
+              {carregando ? (
+                <p className="tw:py-8 tw:text-center tw:text-[12px] tw:text-[#78847b]">
+                  Carregando suas doações...
+                </p>
+              ) : doacoesFiltradas.map((doacao) => (
 
                 <article
                   className="
@@ -400,7 +437,7 @@ function MyDonations() {
               ))}
 
               {/* LISTA VAZIA */}
-              {doacoesFiltradas.length === 0 && (
+              {!carregando && doacoesFiltradas.length === 0 && (
 
                 <EmptyState
                   icon={Package}

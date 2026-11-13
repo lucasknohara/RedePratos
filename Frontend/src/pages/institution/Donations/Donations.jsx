@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   Bell,
@@ -17,91 +17,131 @@ import {
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
 import SearchInput from '../../../components/layout/SearchInput/SearchInput.jsx'
 import EmptyState from '../../../components/layout/EmptyState/EmptyState.jsx'
+import { apiRequest } from '../../../services/api.js'
 
-const doacoesDisponiveis = [
-  {
-    id: 1,
-    nome: 'Tomates',
-    categoria: 'Hortifruti',
-    quantidade: '5 kg',
-    validade: '10/11/2026',
-    origem: 'Comércio',
-    regiao: 'Região central',
-    imagem: '/icons/tomate.svg',
-    descricao: 'Tomates frescos, próprios para consumo.'
-  },
-  {
-    id: 2,
-    nome: 'Arroz',
-    categoria: 'Grãos',
-    quantidade: '10 kg',
-    validade: '15/11/2026',
-    origem: 'Residência',
-    regiao: 'Região norte',
-    imagem: '/icons/arroz.svg',
-    descricao: 'Arroz armazenado adequadamente.'
-  },
-  {
-    id: 3,
-    nome: 'Leite',
-    categoria: 'Laticínios',
-    quantidade: '12 caixas',
-    validade: '12/11/2026',
-    origem: 'Comércio',
-    regiao: 'Região sul',
-    imagem: '/icons/leite.svg',
-    descricao: 'Caixas de leite fechadas e dentro da validade.'
-  },
-  {
-    id: 4,
-    nome: 'Bananas',
-    categoria: 'Hortifruti',
-    quantidade: '8 kg',
-    validade: '09/11/2026',
-    origem: 'Comércio',
-    regiao: 'Região leste',
-    imagem: '/icons/banana.svg',
-    descricao: 'Bananas em boas condições para consumo.'
-  },
-  {
-    id: 5,
-    nome: 'Arroz',
-    categoria: 'Grãos',
-    quantidade: '5 kg',
-    validade: '18/11/2026',
-    origem: 'Comércio',
-    regiao: 'Região oeste',
-    imagem: '/icons/arroz.svg',
-    descricao: 'Pacotes de arroz disponíveis para doação.'
-  },
-  {
-    id: 6,
-    nome: 'Tomates',
-    categoria: 'Hortifruti',
-    quantidade: '3 kg',
-    validade: '11/11/2026',
-    origem: 'Residência',
-    regiao: 'Região central',
-    imagem: '/icons/tomate.svg',
-    descricao: 'Tomates separados para doação.'
+function obterUsuario() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario') || 'null')
+  } catch {
+    return null
   }
-]
+}
 
-const categorias = [
-  'Todas',
-  'Hortifruti',
-  'Grãos',
-  'Laticínios'
-]
+function formatarData(data) {
+  if (!data) return 'Não informada'
+
+  const valor = String(data).slice(0, 10)
+  const partes = valor.split('-')
+
+  if (partes.length === 3 && partes[0].length === 4) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`
+  }
+
+  return valor
+}
+
+function formatarQuantidade(quantidade, unidade) {
+  const numero = Number(quantidade)
+
+  const valor = Number.isFinite(numero)
+    ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(numero)
+    : quantidade
+
+  return [valor, unidade].filter(Boolean).join(' ')
+}
+
+function imagemDoAlimento(nome) {
+  const alimento = String(nome || '').toLowerCase()
+
+  if (alimento.includes('tomate')) return '/icons/tomate.svg'
+  if (alimento.includes('arroz')) return '/icons/arroz.svg'
+  if (alimento.includes('leite')) return '/icons/leite.svg'
+  if (alimento.includes('banana')) return '/icons/banana.svg'
+
+  return '/icons/arroz.svg'
+}
+
+function adaptarDoacao(doacao) {
+  return {
+    id: Number(doacao.id ?? doacao.id_doacao),
+    nome: doacao.nome || 'Alimento',
+    categoria: doacao.categoria || 'Outros',
+    quantidade: formatarQuantidade(doacao.quantidade, doacao.unidade),
+    validade: formatarData(doacao.validade),
+    origem: doacao.origem || 'Não informada',
+    regiao: doacao.regiao || 'Localização não informada',
+    imagem: doacao.imagem || imagemDoAlimento(doacao.nome),
+    descricao: doacao.observacao || 'Nenhuma observação cadastrada.'
+  }
+}
 
 function Donations() {
+  const [doacoes, setDoacoes] = useState([])
   const [busca, setBusca] = useState('')
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('Todas')
   const [solicitacoesEnviadas, setSolicitacoesEnviadas] = useState([])
   const [mensagem, setMensagem] = useState('')
+  const [erro, setErro] = useState('')
+  const [carregando, setCarregando] = useState(true)
+  const [enviandoId, setEnviandoId] = useState(null)
 
-  // Filtra as doações conforme a busca e a categoria.
-  const doacoesFiltradas = doacoesDisponiveis.filter((doacao) => {
+  useEffect(() => {
+    let ativo = true
+
+    async function carregarDados() {
+      try {
+        const usuario = obterUsuario()
+        const idInstituicao = Number(usuario?.id)
+
+        if (usuario?.tipo_usuario !== 'instituicao' ||
+            !Number.isInteger(idInstituicao) ||
+            idInstituicao <= 0) {
+          throw new Error('Entre com uma conta de instituição para consultar as doações.')
+        }
+
+        const consultaDoacoes = new URLSearchParams({
+          id_usuario: String(idInstituicao)
+        })
+
+        const consultaSolicitacoes = new URLSearchParams({
+          id_instituicao: String(idInstituicao)
+        })
+
+        const [doacoesApi, solicitacoesApi] = await Promise.all([
+          apiRequest(`/api/doacoes?${consultaDoacoes.toString()}`),
+          apiRequest(`/api/solicitacoes/instituicao?${consultaSolicitacoes.toString()}`)
+        ])
+
+        if (!Array.isArray(doacoesApi) || !Array.isArray(solicitacoesApi)) {
+          throw new Error('A API retornou dados em um formato inesperado.')
+        }
+
+        if (!ativo) return
+
+        setDoacoes(doacoesApi.map(adaptarDoacao))
+        setSolicitacoesEnviadas(solicitacoesApi)
+      } catch (error) {
+        if (ativo) {
+          setErro(error.message || 'Não foi possível carregar as doações.')
+        }
+      } finally {
+        if (ativo) setCarregando(false)
+      }
+    }
+
+    carregarDados()
+
+    return () => {
+      ativo = false
+    }
+  }, [])
+
+  const categorias = [
+    'Todas',
+    ...new Set(doacoes.map((doacao) => doacao.categoria).filter(Boolean))
+  ]
+
+  const doacoesFiltradas = doacoes.filter((doacao) => {
     const termoBusca = busca.toLowerCase().trim()
 
     const correspondeBusca =
@@ -116,26 +156,58 @@ function Donations() {
     return correspondeBusca && correspondeCategoria
   })
 
-  // Simula o envio de uma solicitação de reserva.
-  function solicitarReserva(doacao) {
-    if (solicitacoesEnviadas.includes(doacao.id)) {
+  async function solicitarReserva(doacao) {
+    const usuario = obterUsuario()
+    const idInstituicao = Number(usuario?.id)
+
+    const jaSolicitada = solicitacoesEnviadas.some((solicitacao) => (
+      Number(solicitacao.id_doacao) === doacao.id &&
+      solicitacao.status === 'pendente'
+    ))
+
+    if (jaSolicitada || enviandoId !== null) return
+
+    if (!Number.isInteger(idInstituicao) || idInstituicao <= 0) {
+      setErro('Não foi possível identificar a instituição. Entre novamente na sua conta.')
       return
     }
 
-    setSolicitacoesEnviadas((anteriores) => [
-      ...anteriores,
-      doacao.id
-    ])
+    setErro('')
+    setMensagem('')
+    setEnviandoId(doacao.id)
 
-    setMensagem(
-      `Solicitação de ${doacao.nome} enviada! Aguarde a resposta do doador.`
-    )
+    try {
+      await apiRequest('/api/solicitacoes', {
+        method: 'POST',
+        body: JSON.stringify({
+          id_doacao: doacao.id,
+          id_instituicao: idInstituicao
+        })
+      })
+
+      setSolicitacoesEnviadas((anteriores) => [
+        ...anteriores,
+        {
+          id_doacao: doacao.id,
+          status: 'pendente'
+        }
+      ])
+
+      setMensagem(
+        `Solicitação de ${doacao.nome} enviada! Aguarde a resposta do doador.`
+      )
+    } catch (error) {
+      setErro(error.message || 'Não foi possível enviar a solicitação.')
+    } finally {
+      setEnviandoId(null)
+    }
   }
 
   function limparFiltros() {
     setBusca('')
     setCategoriaSelecionada('Todas')
     setMensagem('')
+    setErro('')
   }
 
   return (
@@ -294,6 +366,12 @@ function Donations() {
 
         </section>
 
+        {erro && (
+          <div className="tw:mb-5 tw:rounded-xl tw:border tw:border-[#f0d8d5] tw:bg-[#fff0ee] tw:p-4 tw:text-[11px] tw:text-[#9b5148]">
+            {erro}
+          </div>
+        )}
+
         {/* MENSAGEM DE SOLICITAÇÃO */}
         {mensagem && (
           <div className="tw:mb-5 tw:flex tw:items-start tw:gap-3 tw:rounded-xl tw:border tw:border-[#dcebdd] tw:bg-[#edf6ed] tw:p-4">
@@ -340,12 +418,19 @@ function Donations() {
             </div>
           </div>
 
-          {doacoesFiltradas.length > 0 ? (
+          {carregando ? (
+            <p className="tw:py-8 tw:text-center tw:text-[12px] tw:text-[#78847b]">
+              Carregando doações...
+            </p>
+          ) : doacoesFiltradas.length > 0 ? (
 
             <div className="tw:grid tw:grid-cols-2 tw:gap-[17px] tw:max-[900px]:grid-cols-1">
 
               {doacoesFiltradas.map((doacao) => {
-                const solicitada = solicitacoesEnviadas.includes(doacao.id)
+                const solicitada = solicitacoesEnviadas.some((solicitacao) => (
+                  Number(solicitacao.id_doacao) === doacao.id &&
+                  solicitacao.status === 'pendente'
+                ))
 
                 return (
                   <article
@@ -478,10 +563,11 @@ function Donations() {
                         <button
                           type="button"
                           onClick={() => solicitarReserva(doacao)}
+                          disabled={enviandoId === doacao.id}
                           className="tw:flex tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:rounded-lg tw:bg-[#52745B] tw:px-4 tw:py-3 tw:text-[11px] tw:font-semibold tw:text-white tw:transition-colors tw:hover:bg-[#3D6047]"
                         >
                           <HandHeart size={16} />
-                          Solicitar reserva
+                          {enviandoId === doacao.id ? 'Enviando...' : 'Solicitar reserva'}
                         </button>
 
                       )}
