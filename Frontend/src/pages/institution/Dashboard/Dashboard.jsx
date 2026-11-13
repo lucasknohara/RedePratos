@@ -1,3 +1,6 @@
+
+import { useEffect, useState } from 'react'
+
 import {
   Search,
   Package,
@@ -13,62 +16,164 @@ import { Link } from 'react-router-dom'
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
 import PageHeader from '../../../components/layout/PageHeader/PageHeader.jsx'
 import StatCard from '../../../components/layout/StatCard/StatCard.jsx'
+import { apiRequest } from '../../../services/api.js'
 
-const doacoes = [
-  {
-    id: 1,
-    nome: 'Tomates',
-    quantidade: '5 kg',
-    validade: 'Validade: 10/11/2026',
-    regiao: 'Região central',
-    origem: 'Comércio',
-    imagem: '/icons/tomate.svg'
-  },
-  {
-    id: 2,
-    nome: 'Arroz',
-    quantidade: '10 kg',
-    validade: 'Validade: 15/11/2026',
-    regiao: 'Região norte',
-    origem: 'Residência',
-    imagem: '/icons/arroz.svg'
-  },
-  {
-    id: 3,
-    nome: 'Leite',
-    quantidade: '12 caixas',
-    validade: 'Validade: 12/11/2026',
-    regiao: 'Região sul',
-    origem: 'Comércio',
-    imagem: '/icons/leite.svg'
+function obterUsuario() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario') || 'null')
+  } catch {
+    return null
   }
-]
+}
 
-const solicitacoes = [
-  {
-    id: 1,
-    alimento: 'Arroz',
-    quantidade: '5 kg',
-    status: 'Pendente',
-    tipo: 'pendente'
-  },
-  {
-    id: 2,
-    alimento: 'Leite',
-    quantidade: '6 caixas',
-    status: 'Aprovada',
-    tipo: 'aprovada'
-  },
-  {
-    id: 3,
-    alimento: 'Tomates',
-    quantidade: '3 kg',
-    status: 'Pendente',
-    tipo: 'pendente'
+function formatarData(data) {
+  if (!data) return 'Não informada'
+
+  const valor = String(data).slice(0, 10)
+  const partes = valor.split('-')
+
+  if (partes.length === 3 && partes[0].length === 4) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`
   }
-]
+
+  return valor
+}
+
+function formatarQuantidade(quantidade, unidade) {
+  const numero = Number(quantidade)
+
+  const valor = Number.isFinite(numero)
+    ? new Intl.NumberFormat('pt-BR', {
+        maximumFractionDigits: 2
+      }).format(numero)
+    : quantidade
+
+  return [valor, unidade].filter(Boolean).join(' ')
+}
+
+function imagemDoAlimento(nome) {
+  const alimento = String(nome || '').toLowerCase()
+
+  if (alimento.includes('tomate')) return '/icons/tomate.svg'
+  if (alimento.includes('arroz')) return '/icons/arroz.svg'
+  if (alimento.includes('leite')) return '/icons/leite.svg'
+  if (alimento.includes('banana')) return '/icons/banana.svg'
+
+  return '/icons/arroz.svg'
+}
+
+function obterStatus(status) {
+  const statusInfo = {
+    pendente: {
+      nome: 'Pendente',
+      classe: 'tw:bg-[#fff1d8] tw:text-[#a97930]'
+    },
+    aceita: {
+      nome: 'Aceita',
+      classe: 'tw:bg-[#e3f2e6] tw:text-[#36734a]'
+    },
+    recusada: {
+      nome: 'Recusada',
+      classe: 'tw:bg-[#f9e9e7] tw:text-[#a65349]'
+    },
+    encerrada: {
+      nome: 'Encerrada',
+      classe: 'tw:bg-[#f0f1ec] tw:text-[#78847b]'
+    },
+    concluida: {
+      nome: 'Concluída',
+      classe: 'tw:bg-[#e3f2e6] tw:text-[#36734a]'
+    },
+    cancelada: {
+      nome: 'Cancelada',
+      classe: 'tw:bg-[#f9e9e7] tw:text-[#a65349]'
+    }
+  }
+
+  return statusInfo[status] || {
+    nome: status || 'Indefinido',
+    classe: 'tw:bg-[#f0f1ec] tw:text-[#78847b]'
+  }
+}
 
 function InstitutionDashboard() {
+  const [doacoes, setDoacoes] = useState([])
+  const [solicitacoes, setSolicitacoes] = useState([])
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState('')
+
+  useEffect(() => {
+    let ativo = true
+
+    async function carregarDashboard() {
+      try {
+        const usuario = obterUsuario()
+        const idInstituicao = Number(usuario?.id)
+
+        if (
+          usuario?.tipo_usuario !== 'instituicao' ||
+          !Number.isInteger(idInstituicao) ||
+          idInstituicao <= 0
+        ) {
+          throw new Error(
+            'Entre com uma conta de instituição para visualizar o painel.'
+          )
+        }
+
+        const paramsDoacoes = new URLSearchParams({
+          id_usuario: String(idInstituicao)
+        })
+
+        const paramsSolicitacoes = new URLSearchParams({
+          id_instituicao: String(idInstituicao)
+        })
+
+        const [listaDoacoes, listaSolicitacoes] = await Promise.all([
+          apiRequest(`/api/doacoes?${paramsDoacoes.toString()}`),
+          apiRequest(`/api/solicitacoes/instituicao?${paramsSolicitacoes.toString()}`)
+        ])
+
+        if (
+          !Array.isArray(listaDoacoes) ||
+          !Array.isArray(listaSolicitacoes)
+        ) {
+          throw new Error('Não foi possível carregar os dados do painel.')
+        }
+
+        if (ativo) {
+          setDoacoes(listaDoacoes)
+          setSolicitacoes(listaSolicitacoes)
+          setErro('')
+        }
+      } catch (error) {
+        if (ativo) {
+          setErro(error.message || 'Não foi possível carregar a visão geral.')
+        }
+      } finally {
+        if (ativo) {
+          setCarregando(false)
+        }
+      }
+    }
+
+    carregarDashboard()
+
+    return () => {
+      ativo = false
+    }
+  }, [])
+
+  const solicitacoesPendentes = solicitacoes.filter(
+    (solicitacao) => solicitacao.status === 'pendente'
+  ).length
+
+  const reservasConfirmadas = solicitacoes.filter(
+    (solicitacao) => solicitacao.status === 'aceita'
+  ).length
+
+  const doacoesRecentes = doacoes.slice(0, 3)
+  const solicitacoesRecentes = solicitacoes.slice(0, 3)
+
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
 
@@ -80,6 +185,12 @@ function InstitutionDashboard() {
 
         {/* CABEÇALHO */}
         <PageHeader currentPage="Visão geral" />
+
+        {erro && (
+          <div className="tw:mt-5 tw:rounded-xl tw:border tw:border-[#f0d8d5] tw:bg-[#fff0ee] tw:p-4 tw:text-[11px] tw:text-[#9b5148]">
+            {erro}
+          </div>
+        )}
 
         {/* BOAS-VINDAS */}
         <section className="tw:flex tw:items-center tw:justify-between tw:gap-5 tw:py-[35px] tw:max-[760px]:flex-col tw:max-[760px]:items-start">
@@ -105,7 +216,7 @@ function InstitutionDashboard() {
 
           <StatCard
             title="Doações disponíveis"
-            value="08"
+            value={carregando ? '—' : String(doacoes.length).padStart(2, '0')}
             description="Alimentos para solicitar"
             icon={Package}
             iconColor="tw:text-[#528463]"
@@ -113,7 +224,7 @@ function InstitutionDashboard() {
 
           <StatCard
             title="Solicitações em análise"
-            value="03"
+            value={carregando ? '—' : String(solicitacoesPendentes).padStart(2, '0')}
             description="Aguardando retorno dos doadores"
             icon={Clock3}
             iconColor="tw:text-[#d39746]"
@@ -121,8 +232,8 @@ function InstitutionDashboard() {
 
           <StatCard
             title="Reservas confirmadas"
-            value="02"
-            description="Solicitações aprovadas"
+            value={carregando ? '—' : String(reservasConfirmadas).padStart(2, '0')}
+            description="Solicitações aceitas"
             icon={CheckCircle2}
             iconColor="tw:text-[#528463]"
           />
@@ -159,45 +270,57 @@ function InstitutionDashboard() {
 
             <div className="tw:flex tw:flex-col">
 
-              {doacoes.map((doacao) => (
-                <div
-                  key={doacao.id}
-                  className="tw:flex tw:items-center tw:gap-3 tw:border-t tw:border-[#f0f1ec] tw:py-[14px] tw:max-[500px]:flex-wrap"
-                >
+              {carregando ? (
+                <p className="tw:border-t tw:border-[#f0f1ec] tw:py-5 tw:text-center tw:text-[11px] tw:text-[#929b93]">
+                  Carregando doações...
+                </p>
+              ) : doacoesRecentes.length > 0 ? (
 
-                  <div className="tw:grid tw:size-[43px] tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#edf2e9]">
-                    <img
-                      src={doacao.imagem}
-                      alt={doacao.nome}
-                      className="tw:size-[31px] tw:object-contain"
-                    />
-                  </div>
-
-                  <div className="tw:min-w-0 tw:flex-1">
-
-                    <strong className="tw:block tw:text-[12px] tw:text-[#344a3c]">
-                      {doacao.nome} • {doacao.quantidade}
-                    </strong>
-
-                    <small className="tw:mt-[5px] tw:block tw:text-[10px] tw:text-[#929b93]">
-                      {doacao.origem} · {doacao.regiao}
-                    </small>
-
-                    <small className="tw:mt-1 tw:block tw:text-[10px] tw:text-[#59856a]">
-                      {doacao.validade}
-                    </small>
-
-                  </div>
-
-                  <Link
-                    to="/instituicao/doacoes"
-                    className="tw:shrink-0 tw:rounded-lg tw:bg-[#eaf2e8] tw:px-3 tw:py-2 tw:text-[10px] tw:font-bold tw:text-[#477b57] tw:transition-colors tw:hover:bg-[#dcebd9]"
+                doacoesRecentes.map((doacao) => (
+                  <div
+                    key={doacao.id}
+                    className="tw:flex tw:items-center tw:gap-3 tw:border-t tw:border-[#f0f1ec] tw:py-[14px] tw:max-[500px]:flex-wrap"
                   >
-                    Ver doação
-                  </Link>
 
-                </div>
-              ))}
+                    <div className="tw:grid tw:size-[43px] tw:shrink-0 tw:place-items-center tw:rounded-[10px] tw:bg-[#edf2e9]">
+                      <img
+                        src={imagemDoAlimento(doacao.nome)}
+                        alt={doacao.nome}
+                        className="tw:size-[31px] tw:object-contain"
+                      />
+                    </div>
+
+                    <div className="tw:min-w-0 tw:flex-1">
+
+                      <strong className="tw:block tw:text-[12px] tw:text-[#344a3c]">
+                        {doacao.nome} • {formatarQuantidade(doacao.quantidade, doacao.unidade)}
+                      </strong>
+
+                      <small className="tw:mt-[5px] tw:block tw:text-[10px] tw:text-[#929b93]">
+                        {doacao.origem || 'Origem não informada'} · Localização não informada
+                      </small>
+
+                      <small className="tw:mt-1 tw:block tw:text-[10px] tw:text-[#59856a]">
+                        Validade: {formatarData(doacao.validade)}
+                      </small>
+
+                    </div>
+
+                    <Link
+                      to="/instituicao/doacoes"
+                      className="tw:shrink-0 tw:rounded-lg tw:bg-[#eaf2e8] tw:px-3 tw:py-2 tw:text-[10px] tw:font-bold tw:text-[#477b57] tw:transition-colors tw:hover:bg-[#dcebd9]"
+                    >
+                      Ver doação
+                    </Link>
+
+                  </div>
+                ))
+
+              ) : (
+                <p className="tw:border-t tw:border-[#f0f1ec] tw:py-5 tw:text-center tw:text-[11px] tw:text-[#929b93]">
+                  Não há doações disponíveis no momento.
+                </p>
+              )}
 
             </div>
 
@@ -238,40 +361,52 @@ function InstitutionDashboard() {
 
             <div className="tw:flex tw:flex-col">
 
-              {solicitacoes.map((solicitacao) => (
-                <div
-                  key={solicitacao.id}
-                  className="tw:flex tw:items-center tw:gap-[10px] tw:border-t tw:border-[#f0f1ec] tw:py-[15px]"
-                >
+              {carregando ? (
+                <p className="tw:border-t tw:border-[#f0f1ec] tw:py-5 tw:text-center tw:text-[11px] tw:text-[#929b93]">
+                  Carregando solicitações...
+                </p>
+              ) : solicitacoesRecentes.length > 0 ? (
 
-                  <div className="tw:grid tw:size-[38px] tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-[#eaf2e8] tw:text-[#477b57]">
-                    <HeartHandshake size={19} />
-                  </div>
+                solicitacoesRecentes.map((solicitacao) => {
+                  const status = obterStatus(solicitacao.status)
 
-                  <div className="tw:min-w-0 tw:flex-1">
+                  return (
+                    <div
+                      key={solicitacao.id_solicitacao}
+                      className="tw:flex tw:items-center tw:gap-[10px] tw:border-t tw:border-[#f0f1ec] tw:py-[15px]"
+                    >
 
-                    <strong className="tw:block tw:text-[11px] tw:text-[#354b3e]">
-                      {solicitacao.alimento}
-                    </strong>
+                      <div className="tw:grid tw:size-[38px] tw:shrink-0 tw:place-items-center tw:rounded-full tw:bg-[#eaf2e8] tw:text-[#477b57]">
+                        <HeartHandshake size={19} />
+                      </div>
 
-                    <small className="tw:mt-[5px] tw:block tw:text-[10px] tw:text-[#939b94]">
-                      {solicitacao.quantidade} solicitados
-                    </small>
+                      <div className="tw:min-w-0 tw:flex-1">
 
-                  </div>
+                        <strong className="tw:block tw:text-[11px] tw:text-[#354b3e]">
+                          {solicitacao.nome || 'Alimento'}
+                        </strong>
 
-                  <span
-                    className={`tw:whitespace-nowrap tw:rounded-full tw:px-2 tw:py-1.5 tw:text-[9px] ${
-                      solicitacao.tipo === 'aprovada'
-                        ? 'tw:bg-[#e3f2e6] tw:text-[#36734a]'
-                        : 'tw:bg-[#fff1d8] tw:text-[#a97930]'
-                    }`}
-                  >
-                    {solicitacao.status}
-                  </span>
+                        <small className="tw:mt-[5px] tw:block tw:text-[10px] tw:text-[#939b94]">
+                          {formatarQuantidade(solicitacao.quantidade, solicitacao.unidade)} solicitados
+                        </small>
 
-                </div>
-              ))}
+                      </div>
+
+                      <span
+                        className={`tw:whitespace-nowrap tw:rounded-full tw:px-2 tw:py-1.5 tw:text-[9px] ${status.classe}`}
+                      >
+                        {status.nome}
+                      </span>
+
+                    </div>
+                  )
+                })
+
+              ) : (
+                <p className="tw:border-t tw:border-[#f0f1ec] tw:py-5 tw:text-center tw:text-[11px] tw:text-[#929b93]">
+                  Você ainda não enviou solicitações.
+                </p>
+              )}
 
             </div>
 
