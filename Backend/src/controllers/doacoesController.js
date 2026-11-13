@@ -14,7 +14,16 @@ async function listarDoacoesDisponiveisController(req, res) {
     res.status(200).json(resultado);
 };
 
+async function listarDoacoesDoDoadorController(req, res) {
+    const { id_usuario } = req.query;
+    const resultado = await doacoesService.listarDoacoesDoDoadorService(id_usuario);
+
+    res.status(200).json(resultado);
+};
+
+
 module.exports = {
     criarDoacaoController,
     listarDoacoesDisponiveisController,
+    listarDoacoesDoDoadorController,
 };

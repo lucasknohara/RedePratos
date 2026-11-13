@@ -57,7 +57,24 @@ async function listarDoacoesDisponiveisService(id_usuario) {
     return resultado;
 };
 
+async function listarDoacoesDoDoadorService(id_usuario) {
+    const idUsuario = Number(id_usuario);
+
+    if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+        throw new AppError("Id do usuário inválido!", 400);
+    }
+
+    const doador = await doacoesModel.buscarDoadorPorId(idUsuario);
+
+    if (doador === null) {
+        throw new AppError("Usuário não é um doador!", 403);
+    }
+
+    return doacoesModel.listarDoacoesDoDoador(idUsuario);
+}
+
 module.exports = {
     criarDoacaoService,
     listarDoacoesDisponiveisService,
+    listarDoacoesDoDoadorService,
 };
