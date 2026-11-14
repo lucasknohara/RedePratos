@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -19,7 +18,8 @@ import {
 } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
-import { apiRequest } from '../../../services/api.js'
+import { usePerfilUsuario } from '../../../hooks/usePerfilUsuario.js'
+import { useImpacto } from '../../../hooks/useImpacto.js'
 
 const perfilInicial = {
   nome: '',
@@ -74,142 +74,24 @@ function formatarQuantidades(quantidades) {
 }
 
 function Profile() {
-  const [perfil, setPerfil] = useState(perfilInicial)
+  const {
+    perfil,
+    carregando,
+    salvando,
+    mensagem,
+    erro,
+    atualizarPerfil,
+    limparMensagens
+  } = usePerfilUsuario('doador')
+
+  const {
+    impacto,
+    carregando: carregandoImpacto,
+    erro: erroImpacto
+  } = useImpacto('doador')
+
   const [formulario, setFormulario] = useState(perfilInicial)
   const [editando, setEditando] = useState(false)
-  const [carregando, setCarregando] = useState(true)
-  const [salvando, setSalvando] = useState(false)
-  const [mensagem, setMensagem] = useState('')
-  const [erro, setErro] = useState('')
-
-  const [impacto, setImpacto] = useState({
-    doacoesConcluidas: 0,
-    quantidadesPorUnidade: {}
-  })
-
-  const [carregandoImpacto, setCarregandoImpacto] = useState(true)
-  const [erroImpacto, setErroImpacto] = useState('')
-
-  const [idUsuario] = useState(() => {
-    try {
-      const usuario = JSON.parse(localStorage.getItem('usuario'))
-      return usuario?.id || null
-    } catch {
-      return null
-    }
-  })
-
-  // Carregamento do perfil e do impacto
-  useEffect(() => {
-    let componenteAtivo = true
-
-    async function carregarPerfil() {
-      try {
-        const dados = await apiRequest(
-          `/api/usuarios/${idUsuario}/perfil`
-        )
-
-        if (!componenteAtivo) return
-
-        const perfilCarregado = {
-          nome: dados.nome || '',
-          email: dados.email || '',
-          telefone: dados.telefone || '',
-          origem: dados.origem || 'residencia'
-        }
-
-        setPerfil(perfilCarregado)
-        setFormulario(perfilCarregado)
-      } catch (error) {
-        if (componenteAtivo) {
-          setErro(error.message || 'Não foi possível carregar seu perfil.')
-        }
-      } finally {
-        if (componenteAtivo) {
-          setCarregando(false)
-        }
-      }
-    }
-
-    async function carregarImpacto() {
-      try {
-        const dados = await apiRequest(
-          `/api/solicitacoes/doador?id_usuario=${idUsuario}`
-        )
-
-        if (!componenteAtivo) return
-
-        const solicitacoes = Array.isArray(dados)
-          ? dados
-          : dados?.solicitacoes
-
-        if (!Array.isArray(solicitacoes)) {
-          throw new Error('Não foi possível carregar os dados do impacto.')
-        }
-
-        const concluidas = solicitacoes.filter(
-          (solicitacao) => solicitacao.status === 'concluida'
-        )
-
-        const doacoesUnicas = new Map()
-
-        concluidas.forEach((solicitacao) => {
-          const idDoacao = solicitacao.id_doacao ?? solicitacao.id_solicitacao
-
-          if (idDoacao !== null && idDoacao !== undefined) {
-            doacoesUnicas.set(String(idDoacao), solicitacao)
-          }
-        })
-
-        const doacoesConcluidas = Array.from(doacoesUnicas.values())
-        const quantidades = new Map()
-
-        doacoesConcluidas.forEach((doacao) => {
-          const quantidade = Number(doacao.quantidade)
-
-          if (!Number.isFinite(quantidade) || quantidade <= 0) {
-            return
-          }
-
-          const unidade = typeof doacao.unidade === 'string' && doacao.unidade.trim()
-            ? doacao.unidade.trim().toLowerCase()
-            : 'unidade'
-
-          quantidades.set(
-            unidade,
-            (quantidades.get(unidade) || 0) + quantidade
-          )
-        })
-
-        setImpacto({
-          doacoesConcluidas: doacoesConcluidas.length,
-          quantidadesPorUnidade: Object.fromEntries(quantidades)
-        })
-      } catch (error) {
-        if (componenteAtivo) {
-          setErroImpacto(error.message || 'Não foi possível carregar seu impacto.')
-        }
-      } finally {
-        if (componenteAtivo) {
-          setCarregandoImpacto(false)
-        }
-      }
-    }
-
-    if (!idUsuario) {
-      setErro('Não foi possível identificar o usuário. Faça login novamente.')
-      setCarregando(false)
-      setCarregandoImpacto(false)
-      return
-    }
-
-    carregarPerfil()
-    carregarImpacto()
-
-    return () => {
-      componenteAtivo = false
-    }
-  }, [idUsuario])
 
   // Cálculo do nível e das conquistas
   const metas = [1, 5, 10, 20]
@@ -251,14 +133,13 @@ function Profile() {
   // Edição do perfil
   function iniciarEdicao() {
     setFormulario(perfil)
-    setMensagem('')
-    setErro('')
+    limparMensagens()
     setEditando(true)
   }
 
   function cancelarEdicao() {
     setFormulario(perfil)
-    setErro('')
+    limparMensagens()
     setEditando(false)
   }
 
@@ -276,62 +157,11 @@ function Profile() {
 
     if (salvando) return
 
-    setSalvando(true)
-    setErro('')
-    setMensagem('')
+    const perfilAtualizado = await atualizarPerfil(formulario)
 
-    try {
-      const dadosAtualizados = await apiRequest(
-        `/api/usuarios/${idUsuario}/perfil`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            nome: formulario.nome,
-            email: formulario.email,
-            telefone: formulario.telefone,
-            origem: formulario.origem
-          })
-        }
-      )
-
-      const perfilAtualizado = {
-        nome: dadosAtualizados.nome || '',
-        email: dadosAtualizados.email || '',
-        telefone: dadosAtualizados.telefone || '',
-        origem: dadosAtualizados.origem || 'residencia'
-      }
-
-      setPerfil(perfilAtualizado)
+    if (perfilAtualizado) {
       setFormulario(perfilAtualizado)
-
-      let usuarioSalvo = {}
-
-      try {
-        usuarioSalvo = JSON.parse(
-          localStorage.getItem('usuario') || '{}'
-        )
-      } catch {
-        usuarioSalvo = {}
-      }
-
-      localStorage.setItem(
-        'usuario',
-        JSON.stringify({
-          ...usuarioSalvo,
-          nome: perfilAtualizado.nome,
-          email: perfilAtualizado.email
-        })
-      )
-
       setEditando(false)
-      setMensagem('Perfil atualizado com sucesso!')
-    } catch (error) {
-      setErro(error.message || 'Não foi possível atualizar seu perfil.')
-    } finally {
-      setSalvando(false)
     }
   }
 
@@ -408,7 +238,7 @@ function Profile() {
           <button
             type="button"
             onClick={iniciarEdicao}
-            disabled={carregando || !idUsuario || Boolean(erro)}
+            disabled={carregando || Boolean(erro)}
             className="tw:flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-[#e8f5e9] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#39845A] tw:transition-colors tw:hover:bg-[#d8eddb] tw:disabled:cursor-not-allowed tw:disabled:opacity-50"
           >
             <Pencil size={14} />

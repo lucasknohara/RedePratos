@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   Bell,
@@ -19,7 +18,8 @@ import {
 } from 'lucide-react'
 
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
-import { apiRequest } from '../../../services/api.js'
+import { usePerfilUsuario } from '../../../hooks/usePerfilUsuario.js'
+import { useImpacto } from '../../../hooks/useImpacto.js'
 
 const perfilInicial = {
   nome: '',
@@ -56,167 +56,24 @@ function formatarQuantidades(quantidades) {
 }
 
 function Profile() {
-  const [perfil, setPerfil] = useState(perfilInicial)
+  const {
+    perfil,
+    carregando,
+    salvando,
+    mensagem,
+    erro,
+    atualizarPerfil,
+    limparMensagens
+  } = usePerfilUsuario('instituicao')
+
+  const {
+    impacto,
+    carregando: carregandoImpacto,
+    erro: erroImpacto
+  } = useImpacto('instituicao')
+
   const [formulario, setFormulario] = useState(perfilInicial)
   const [editando, setEditando] = useState(false)
-  const [carregando, setCarregando] = useState(true)
-  const [salvando, setSalvando] = useState(false)
-  const [mensagem, setMensagem] = useState('')
-  const [erro, setErro] = useState('')
-
-  const [impacto, setImpacto] = useState({
-    doacoesRecebidas: 0,
-    doadoresParceiros: 0,
-    quantidadesPorUnidade: {}
-  })
-
-  const [carregandoImpacto, setCarregandoImpacto] = useState(true)
-  const [erroImpacto, setErroImpacto] = useState('')
-
-  const [idUsuario] = useState(() => {
-    try {
-      const usuario = JSON.parse(localStorage.getItem('usuario'))
-      return usuario?.id || null
-    } catch {
-      return null
-    }
-  })
-
-  // Carregamento do perfil
-  useEffect(() => {
-    let componenteAtivo = true
-
-    async function carregarPerfil() {
-      if (!idUsuario) {
-        setErro('Não foi possível identificar o usuário. Faça login novamente.')
-        setCarregando(false)
-        return
-      }
-
-      try {
-        const dados = await apiRequest(`/api/usuarios/${idUsuario}/perfil`)
-
-        if (!componenteAtivo) return
-
-        const perfilCarregado = {
-          nome: dados.nome || '',
-          email: dados.email || '',
-          telefone: dados.telefone || '',
-          tipo: dados.tipo_instituicao || 'ong',
-          regiao: dados.regiao || '',
-          descricao: dados.descricao || ''
-        }
-
-        setPerfil(perfilCarregado)
-        setFormulario(perfilCarregado)
-      } catch (error) {
-        if (componenteAtivo) {
-          setErro(error.message || 'Não foi possível carregar o perfil da instituição.')
-        }
-      } finally {
-        if (componenteAtivo) {
-          setCarregando(false)
-        }
-      }
-    }
-
-    carregarPerfil()
-
-    return () => {
-      componenteAtivo = false
-    }
-  }, [idUsuario])
-
-  // Carregamento do impacto da instituição
-  useEffect(() => {
-    let componenteAtivo = true
-
-    async function carregarImpacto() {
-      if (!idUsuario) {
-        setErroImpacto('Não foi possível identificar a instituição.')
-        setCarregandoImpacto(false)
-        return
-      }
-
-      try {
-        const dados = await apiRequest(
-          `/api/solicitacoes/instituicao?id_instituicao=${idUsuario}`
-        )
-
-        if (!componenteAtivo) return
-
-        const solicitacoes = Array.isArray(dados)
-          ? dados
-          : dados?.solicitacoes
-
-        if (!Array.isArray(solicitacoes)) {
-          throw new Error('Não foi possível carregar os dados da instituição.')
-        }
-
-        const concluidas = solicitacoes.filter(
-          (solicitacao) => solicitacao.status === 'concluida'
-        )
-
-        const doacoesUnicas = new Map()
-
-        concluidas.forEach((solicitacao) => {
-          const idDoacao = solicitacao.id_doacao ?? solicitacao.id_solicitacao
-
-          if (idDoacao !== null && idDoacao !== undefined) {
-            doacoesUnicas.set(String(idDoacao), solicitacao)
-          }
-        })
-
-        const doacoesRecebidas = Array.from(doacoesUnicas.values())
-
-        const doadores = new Set(
-          doacoesRecebidas
-            .map((doacao) => doacao.id_doador)
-            .filter((id) => id !== null && id !== undefined)
-            .map(String)
-        )
-
-        const quantidades = new Map()
-
-        doacoesRecebidas.forEach((doacao) => {
-          const quantidade = Number(doacao.quantidade)
-
-          if (!Number.isFinite(quantidade) || quantidade <= 0) {
-            return
-          }
-
-          const unidade = typeof doacao.unidade === 'string' && doacao.unidade.trim()
-            ? doacao.unidade.trim().toLowerCase()
-            : 'unidade'
-
-          quantidades.set(
-            unidade,
-            (quantidades.get(unidade) || 0) + quantidade
-          )
-        })
-
-        setImpacto({
-          doacoesRecebidas: doacoesRecebidas.length,
-          doadoresParceiros: doadores.size,
-          quantidadesPorUnidade: Object.fromEntries(quantidades)
-        })
-      } catch (error) {
-        if (componenteAtivo) {
-          setErroImpacto(error.message || 'Não foi possível carregar o impacto da instituição.')
-        }
-      } finally {
-        if (componenteAtivo) {
-          setCarregandoImpacto(false)
-        }
-      }
-    }
-
-    carregarImpacto()
-
-    return () => {
-      componenteAtivo = false
-    }
-  }, [idUsuario])
 
   const tipoSelecionado = tiposInstituicao.find(
     (tipo) => tipo.valor === perfil.tipo
@@ -225,14 +82,13 @@ function Profile() {
   // Edição do perfil
   function iniciarEdicao() {
     setFormulario(perfil)
-    setMensagem('')
-    setErro('')
+    limparMensagens()
     setEditando(true)
   }
 
   function cancelarEdicao() {
     setFormulario(perfil)
-    setErro('')
+    limparMensagens()
     setEditando(false)
   }
 
@@ -250,64 +106,11 @@ function Profile() {
 
     if (salvando) return
 
-    setSalvando(true)
-    setMensagem('')
-    setErro('')
+    const perfilAtualizado = await atualizarPerfil(formulario)
 
-    try {
-      const dadosAtualizados = await apiRequest(
-        `/api/usuarios/${idUsuario}/perfil`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            nome: formulario.nome,
-            email: formulario.email,
-            telefone: formulario.telefone,
-            tipo_instituicao: formulario.tipo,
-            regiao: formulario.regiao,
-            descricao: formulario.descricao
-          })
-        }
-      )
-
-      const perfilAtualizado = {
-        nome: dadosAtualizados.nome || '',
-        email: dadosAtualizados.email || '',
-        telefone: dadosAtualizados.telefone || '',
-        tipo: dadosAtualizados.tipo_instituicao || 'ong',
-        regiao: dadosAtualizados.regiao || '',
-        descricao: dadosAtualizados.descricao || ''
-      }
-
-      setPerfil(perfilAtualizado)
+    if (perfilAtualizado) {
       setFormulario(perfilAtualizado)
-
-      let usuarioSalvo = {}
-
-      try {
-        usuarioSalvo = JSON.parse(localStorage.getItem('usuario') || '{}')
-      } catch {
-        usuarioSalvo = {}
-      }
-
-      localStorage.setItem(
-        'usuario',
-        JSON.stringify({
-          ...usuarioSalvo,
-          nome: perfilAtualizado.nome,
-          email: perfilAtualizado.email
-        })
-      )
-
       setEditando(false)
-      setMensagem('Informações atualizadas com sucesso!')
-    } catch (error) {
-      setErro(error.message || 'Não foi possível atualizar o perfil.')
-    } finally {
-      setSalvando(false)
     }
   }
 
@@ -384,7 +187,7 @@ function Profile() {
           <button
             type="button"
             onClick={iniciarEdicao}
-            disabled={carregando || !idUsuario || Boolean(erro)}
+            disabled={carregando || Boolean(erro)}
             className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-full tw:bg-[#e8f5e9] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#39845A] tw:transition-colors tw:hover:bg-[#d8eddb] tw:disabled:cursor-not-allowed tw:disabled:opacity-50"
           >
             <Pencil size={14} />
@@ -434,7 +237,7 @@ function Profile() {
               </div>
 
               <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-                {carregandoImpacto ? '...' : impacto.doacoesRecebidas.toString().padStart(2, '0')}
+                {carregandoImpacto ? '...' : impacto.doacoesConcluidas.toString().padStart(2, '0')}
               </strong>
 
               <small className="tw:text-[10px] tw:text-[#8c978e]">
@@ -472,7 +275,7 @@ function Profile() {
               <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
                 {carregandoImpacto
                   ? '...'
-                  : impacto.doadoresParceiros.toString().padStart(2, '0')}
+                  : impacto.totalParceiros.toString().padStart(2, '0')}
               </strong>
 
               <small className="tw:text-[10px] tw:text-[#8c978e]">

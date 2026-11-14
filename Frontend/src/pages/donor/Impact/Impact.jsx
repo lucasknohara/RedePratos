@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -15,7 +14,7 @@ import {
 } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
-import { apiRequest } from '../../../services/api.js'
+import { useImpacto } from '../../../hooks/useImpacto.js'
 
 const formatador = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 2
@@ -36,112 +35,11 @@ function formatarQuantidades(quantidades) {
 }
 
 function Impact() {
-  const [impacto, setImpacto] = useState({
-    doacoesConcluidas: 0,
-    instituicoesAjudadas: 0,
-    quantidadesPorUnidade: {}
-  })
-
-  const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState('')
-
-  const [idUsuario] = useState(() => {
-    try {
-      const usuario = JSON.parse(localStorage.getItem('usuario'))
-      return usuario?.id || null
-    } catch {
-      return null
-    }
-  })
-
-  useEffect(() => {
-    let componenteAtivo = true
-
-    async function carregarImpacto() {
-      if (!idUsuario) {
-        setErro('Não foi possível identificar o usuário. Faça login novamente.')
-        setCarregando(false)
-        return
-      }
-
-      try {
-        const dados = await apiRequest(
-          `/api/solicitacoes/doador?id_usuario=${idUsuario}`
-        )
-
-        if (!componenteAtivo) return
-
-        const solicitacoes = Array.isArray(dados)
-          ? dados
-          : dados?.solicitacoes
-
-        if (!Array.isArray(solicitacoes)) {
-          throw new Error('Não foi possível carregar os dados do seu impacto.')
-        }
-
-        const concluidas = solicitacoes.filter(
-          (solicitacao) => solicitacao.status === 'concluida'
-        )
-
-        const doacoesPorId = new Map()
-
-        concluidas.forEach((solicitacao) => {
-          const idDoacao = solicitacao.id_doacao ?? solicitacao.id_solicitacao
-
-          if (idDoacao !== null && idDoacao !== undefined) {
-            doacoesPorId.set(String(idDoacao), solicitacao)
-          }
-        })
-
-        const doacoesConcluidas = Array.from(doacoesPorId.values())
-
-        const instituicoes = new Set(
-          doacoesConcluidas
-            .map((doacao) => doacao.id_instituicao)
-            .filter((id) => id !== null && id !== undefined)
-            .map(String)
-        )
-
-        const quantidades = new Map()
-
-        doacoesConcluidas.forEach((doacao) => {
-          const quantidade = Number(doacao.quantidade)
-
-          if (!Number.isFinite(quantidade) || quantidade <= 0) {
-            return
-          }
-
-          const unidade = typeof doacao.unidade === 'string' && doacao.unidade.trim()
-            ? doacao.unidade.trim().toLowerCase()
-            : 'unidade'
-
-          const totalAtual = quantidades.get(unidade) || 0
-
-          quantidades.set(unidade, totalAtual + quantidade)
-        })
-
-        setImpacto({
-          doacoesConcluidas: doacoesConcluidas.length,
-          instituicoesAjudadas: instituicoes.size,
-          quantidadesPorUnidade: Object.fromEntries(quantidades)
-        })
-      } catch (error) {
-        if (componenteAtivo) {
-          setErro(error.message || 'Não foi possível carregar seu impacto.')
-        }
-      } finally {
-        if (componenteAtivo) {
-          setCarregando(false)
-        }
-      }
-    }
-
-    carregarImpacto()
-
-    return () => {
-      componenteAtivo = false
-    }
-  }, [idUsuario])
+  const {
+    impacto,
+    carregando,
+    erro
+  } = useImpacto('doador')
 
   const metasConquistas = [1, 5, 10, 20]
 
@@ -395,7 +293,7 @@ function Impact() {
             <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
               {carregando
                 ? '...'
-                : impacto.instituicoesAjudadas.toString().padStart(2, '0')}
+                : impacto.totalParceiros.toString().padStart(2, '0')}
             </strong>
 
             <small className="tw:text-[10px] tw:text-[#8c978e]">
