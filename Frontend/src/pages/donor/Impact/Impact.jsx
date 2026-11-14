@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+
 import {
   Bell,
   ArrowUpRight,
@@ -12,73 +15,219 @@ import {
 } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
+import { apiRequest } from '../../../services/api.js'
 
-import { Link } from 'react-router-dom'
+const formatador = new Intl.NumberFormat('pt-BR', {
+  maximumFractionDigits: 2
+})
 
-// Dados demonstrativos.
-// Posteriormente serão substituídos pelos dados do backend.
-const impacto = {
-  doacoesConcluidas: 12,
-  alimentosDoados: 35,
-  instituicoesAjudadas: 4
+function formatarQuantidades(quantidades) {
+  const unidades = Object.entries(quantidades)
+
+  if (unidades.length === 0) {
+    return '0'
+  }
+
+  return unidades
+    .map(([unidade, quantidade]) => {
+      return `${formatador.format(quantidade)} ${unidade}`
+    })
+    .join(' / ')
 }
 
-const conquistas = [
-  {
-    id: 1,
-    titulo: 'Primeiro passo',
-    descricao: 'Realize sua primeira doação.',
-    requisito: '1 doação concluída',
-    icone: Sprout,
-    desbloqueada: true
-  },
-  {
-    id: 2,
-    titulo: 'Doador solidário',
-    descricao: 'Complete 5 doações e ajude a combater o desperdício.',
-    requisito: '5 doações concluídas',
-    icone: HeartHandshake,
-    desbloqueada: true
-  },
-  {
-    id: 3,
-    titulo: 'Guardião dos alimentos',
-    descricao: 'Alcance a marca de 10 doações concluídas.',
-    requisito: '10 doações concluídas',
-    icone: Leaf,
-    desbloqueada: true
-  },
-  {
-    id: 4,
-    titulo: 'Embaixador RedePratos',
-    descricao: 'Complete 20 doações e inspire outras pessoas.',
-    requisito: '20 doações concluídas',
-    icone: Trophy,
-    desbloqueada: false
-  }
-]
-
 function Impact() {
+  const [impacto, setImpacto] = useState({
+    doacoesConcluidas: 0,
+    instituicoesAjudadas: 0,
+    quantidadesPorUnidade: {}
+  })
+
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState('')
+
+  const [idUsuario] = useState(() => {
+    try {
+      const usuario = JSON.parse(localStorage.getItem('usuario'))
+      return usuario?.id || null
+    } catch {
+      return null
+    }
+  })
+
+  useEffect(() => {
+    let componenteAtivo = true
+
+    async function carregarImpacto() {
+      if (!idUsuario) {
+        setErro('Não foi possível identificar o usuário. Faça login novamente.')
+        setCarregando(false)
+        return
+      }
+
+      try {
+        const dados = await apiRequest(
+          `/api/solicitacoes/doador?id_usuario=${idUsuario}`
+        )
+
+        if (!componenteAtivo) return
+
+        const solicitacoes = Array.isArray(dados)
+          ? dados
+          : dados?.solicitacoes
+
+        if (!Array.isArray(solicitacoes)) {
+          throw new Error('Não foi possível carregar os dados do seu impacto.')
+        }
+
+        const concluidas = solicitacoes.filter(
+          (solicitacao) => solicitacao.status === 'concluida'
+        )
+
+        const doacoesPorId = new Map()
+
+        concluidas.forEach((solicitacao) => {
+          const idDoacao = solicitacao.id_doacao ?? solicitacao.id_solicitacao
+
+          if (idDoacao !== null && idDoacao !== undefined) {
+            doacoesPorId.set(String(idDoacao), solicitacao)
+          }
+        })
+
+        const doacoesConcluidas = Array.from(doacoesPorId.values())
+
+        const instituicoes = new Set(
+          doacoesConcluidas
+            .map((doacao) => doacao.id_instituicao)
+            .filter((id) => id !== null && id !== undefined)
+            .map(String)
+        )
+
+        const quantidades = new Map()
+
+        doacoesConcluidas.forEach((doacao) => {
+          const quantidade = Number(doacao.quantidade)
+
+          if (!Number.isFinite(quantidade) || quantidade <= 0) {
+            return
+          }
+
+          const unidade = typeof doacao.unidade === 'string' && doacao.unidade.trim()
+            ? doacao.unidade.trim().toLowerCase()
+            : 'unidade'
+
+          const totalAtual = quantidades.get(unidade) || 0
+
+          quantidades.set(unidade, totalAtual + quantidade)
+        })
+
+        setImpacto({
+          doacoesConcluidas: doacoesConcluidas.length,
+          instituicoesAjudadas: instituicoes.size,
+          quantidadesPorUnidade: Object.fromEntries(quantidades)
+        })
+      } catch (error) {
+        if (componenteAtivo) {
+          setErro(error.message || 'Não foi possível carregar seu impacto.')
+        }
+      } finally {
+        if (componenteAtivo) {
+          setCarregando(false)
+        }
+      }
+    }
+
+    carregarImpacto()
+
+    return () => {
+      componenteAtivo = false
+    }
+  }, [idUsuario])
+
+  const metasConquistas = [1, 5, 10, 20]
+
+  const metaAtual = metasConquistas.find(
+    (meta) => impacto.doacoesConcluidas < meta
+  )
+
+  const proximaMeta = metaAtual || 20
+
   const progresso = Math.min(
-    (impacto.doacoesConcluidas / 20) * 100,
+    (impacto.doacoesConcluidas / proximaMeta) * 100,
     100
   )
 
   const faltamDoacoes = Math.max(
-    20 - impacto.doacoesConcluidas,
+    proximaMeta - impacto.doacoesConcluidas,
     0
   )
+
+  let nivelAtual = 0
+
+  if (impacto.doacoesConcluidas >= 20) {
+    nivelAtual = 4
+  } else if (impacto.doacoesConcluidas >= 10) {
+    nivelAtual = 3
+  } else if (impacto.doacoesConcluidas >= 5) {
+    nivelAtual = 2
+  } else if (impacto.doacoesConcluidas >= 1) {
+    nivelAtual = 1
+  }
+
+  const nomesNiveis = [
+    'Novo colaborador',
+    'Primeiro passo',
+    'Doador solidário',
+    'Guardião dos alimentos',
+    'Embaixador RedePratos'
+  ]
+
+  const definicaoConquistas = [
+    {
+      id: 1,
+      titulo: 'Primeiro passo',
+      descricao: 'Realize sua primeira doação.',
+      requisito: 1,
+      textoRequisito: '1 doação concluída',
+      icone: Sprout
+    },
+    {
+      id: 2,
+      titulo: 'Doador solidário',
+      descricao: 'Complete 5 doações e ajude a combater o desperdício.',
+      requisito: 5,
+      textoRequisito: '5 doações concluídas',
+      icone: HeartHandshake
+    },
+    {
+      id: 3,
+      titulo: 'Guardião dos alimentos',
+      descricao: 'Alcance a marca de 10 doações concluídas.',
+      requisito: 10,
+      textoRequisito: '10 doações concluídas',
+      icone: Leaf
+    },
+    {
+      id: 4,
+      titulo: 'Embaixador RedePratos',
+      descricao: 'Complete 20 doações e inspire outras pessoas.',
+      requisito: 20,
+      textoRequisito: '20 doações concluídas',
+      icone: Trophy
+    }
+  ]
+
+  const conquistas = definicaoConquistas.map((conquista) => ({
+    ...conquista,
+    desbloqueada: impacto.doacoesConcluidas >= conquista.requisito
+  }))
 
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
 
-      {/* MENU LATERAL */}
       <DonorSidebar />
 
-      {/* CONTEÚDO PRINCIPAL */}
       <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
-        {/* CABEÇALHO */}
         <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
 
           <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
@@ -90,16 +239,16 @@ function Impact() {
           </div>
 
           <button
+            type="button"
             className="tw:relative tw:grid tw:size-10 tw:cursor-pointer tw:place-items-center tw:rounded-full tw:border tw:border-[#e8eae2] tw:bg-white tw:text-[#315c43]"
             aria-label="Notificações"
           >
             <Bell size={20} />
-            <span className="tw:absolute tw:top-2 tw:right-[9px] tw:size-[7px] tw:rounded-full tw:bg-[#d78b42]"></span>
+            <span className="tw:absolute tw:top-2 tw:right-[9px] tw:size-[7px] tw:rounded-full tw:bg-[#d78b42]" />
           </button>
 
         </header>
 
-        {/* APRESENTAÇÃO */}
         <section className="tw:py-[35px]">
 
           <span className="tw:text-[10px] tw:font-bold tw:tracking-[1px] tw:text-[#689171]">
@@ -116,7 +265,12 @@ function Impact() {
 
         </section>
 
-        {/* NÍVEL E PROGRESSO */}
+        {erro && (
+          <p className="tw:mb-5 tw:rounded-xl tw:bg-[#fff0ed] tw:p-3 tw:text-sm tw:text-[#b94b42]" role="alert">
+            {erro}
+          </p>
+        )}
+
         <section className="tw:mb-[22px] tw:rounded-xl tw:border tw:border-[#dfe9dc] tw:bg-[#e8f0e5] tw:p-[25px] tw:max-[760px]:p-5">
 
           <div className="tw:flex tw:items-center tw:justify-between tw:gap-5 tw:max-[600px]:flex-col tw:max-[600px]:items-start">
@@ -133,23 +287,24 @@ function Impact() {
                 </span>
 
                 <h2 className="tw:mt-1 tw:text-[21px] tw:font-bold tw:text-[#315c43]">
-                  Guardião dos alimentos
+                  {carregando ? 'Carregando...' : nomesNiveis[nivelAtual]}
                 </h2>
 
                 <p className="tw:mt-1 tw:text-[11px] tw:text-[#718575]">
-                  Você já está fazendo a diferença!
+                  {carregando
+                    ? 'Buscando suas contribuições.'
+                    : 'Você já está fazendo a diferença!'}
                 </p>
               </div>
 
             </div>
 
             <div className="tw:rounded-full tw:border tw:border-[#cbdcc9] tw:bg-white/70 tw:px-4 tw:py-2 tw:text-[11px] tw:font-semibold tw:text-[#477b57]">
-              Nível 3
+              Nível {nivelAtual}
             </div>
 
           </div>
 
-          {/* BARRA DE PROGRESSO */}
           <div className="tw:mt-7">
 
             <div className="tw:mb-2 tw:flex tw:items-center tw:justify-between tw:gap-3">
@@ -158,7 +313,9 @@ function Impact() {
               </span>
 
               <span className="tw:text-[11px] tw:font-bold tw:text-[#477b57]">
-                {impacto.doacoesConcluidas}/20 doações
+                {carregando
+                  ? '...'
+                  : `${impacto.doacoesConcluidas}/${proximaMeta} doações`}
               </span>
             </div>
 
@@ -166,27 +323,28 @@ function Impact() {
               className="tw:h-[9px] tw:overflow-hidden tw:rounded-full tw:bg-[#d5e2d2]"
               role="progressbar"
               aria-label="Progresso para a próxima conquista"
-              aria-valuenow={impacto.doacoesConcluidas}
+              aria-valuenow={carregando ? 0 : progresso}
               aria-valuemin={0}
-              aria-valuemax={20}
+              aria-valuemax={100}
             >
               <div
                 className="tw:h-full tw:rounded-full tw:bg-[#54845d] tw:transition-all"
-                style={{ width: `${progresso}%` }}
-              ></div>
+                style={{ width: `${carregando ? 0 : progresso}%` }}
+              />
             </div>
 
             <p className="tw:mt-2 tw:text-[10px] tw:text-[#718575]">
-              {faltamDoacoes > 0
-                ? `Faltam ${faltamDoacoes} doações para desbloquear Embaixador RedePratos.`
-                : 'Você alcançou todas as conquistas disponíveis!'}
+              {carregando
+                ? 'Calculando seu progresso...'
+                : faltamDoacoes > 0
+                  ? `Faltam ${faltamDoacoes} ${faltamDoacoes === 1 ? 'doação' : 'doações'} para desbloquear ${nomesNiveis[nivelAtual + 1]}.`
+                  : 'Você alcançou todas as conquistas disponíveis!'}
             </p>
 
           </div>
 
         </section>
 
-        {/* INDICADORES DE IMPACTO */}
         <section className="tw:mb-[25px] tw:grid tw:grid-cols-3 tw:gap-[17px] tw:max-[760px]:grid-cols-1">
 
           <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[760px]:p-4">
@@ -197,7 +355,9 @@ function Impact() {
             </div>
 
             <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              {impacto.doacoesConcluidas.toString().padStart(2, '0')}
+              {carregando
+                ? '...'
+                : impacto.doacoesConcluidas.toString().padStart(2, '0')}
             </strong>
 
             <small className="tw:text-[10px] tw:text-[#8c978e]">
@@ -213,12 +373,14 @@ function Impact() {
               <Scale size={21} className="tw:text-[#528463]" />
             </div>
 
-            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              {impacto.alimentosDoados} kg
+            <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:break-words tw:text-[22px] tw:font-bold tw:text-[#244d39]">
+              {carregando
+                ? '...'
+                : formatarQuantidades(impacto.quantidadesPorUnidade)}
             </strong>
 
             <small className="tw:text-[10px] tw:text-[#8c978e]">
-              Quantidade total doada
+              Quantidade por unidade
             </small>
 
           </article>
@@ -231,7 +393,9 @@ function Impact() {
             </div>
 
             <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
-              {impacto.instituicoesAjudadas.toString().padStart(2, '0')}
+              {carregando
+                ? '...'
+                : impacto.instituicoesAjudadas.toString().padStart(2, '0')}
             </strong>
 
             <small className="tw:text-[10px] tw:text-[#8c978e]">
@@ -242,7 +406,6 @@ function Impact() {
 
         </section>
 
-        {/* CONQUISTAS */}
         <section className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-[23px] tw:max-[760px]:p-4">
 
           <div className="tw:mb-6">
@@ -316,7 +479,7 @@ function Impact() {
                     >
                       {conquista.desbloqueada
                         ? 'Conquista desbloqueada'
-                        : conquista.requisito}
+                        : conquista.textoRequisito}
                     </span>
 
                   </div>
@@ -329,7 +492,6 @@ function Impact() {
 
         </section>
 
-        {/* MENSAGEM FINAL */}
         <section className="tw:mt-5 tw:flex tw:items-center tw:justify-between tw:gap-4 tw:rounded-xl tw:bg-[#e8f0e5] tw:p-[21px] tw:text-[#315c43]">
 
           <div className="tw:flex tw:items-center tw:gap-[14px]">
@@ -350,7 +512,7 @@ function Impact() {
 
           <Link
             to="/doador/solicitacoes"
-            aria-label="Ver meus alimentos"
+            aria-label="Ver minhas solicitações"
           >
             <ArrowUpRight size={21} />
           </Link>
