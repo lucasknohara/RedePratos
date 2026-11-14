@@ -32,7 +32,7 @@ A reserva depende da aprovação do Doador. A doação só deve ser considerada 
 - Recebimento e resposta às solicitações das instituições.
 - Painel da Instituição, busca de doações e acompanhamento dos pedidos.
 - Perfil para cada tipo de usuário.
-- Área **Meu Impacto**, com indicadores demonstrativos.
+- Área meu impacto, que mostra quantidade de doações e conquistas alcançadas.
 - Busca, filtros e mensagens para estados sem resultados.
 
 ## Tecnologias
@@ -66,11 +66,61 @@ A interface utiliza componentes reutilizáveis para manter consistência visual 
 ```bash
 git clone https://github.com/lucasknohara/RedePratos.git
 cd RedePratos
+```
+## Instalação Backend
+
+```bash
+cd Backend
+npm install
+npm run dev
+```
+
+# em outro terminal
+
+## Instalação Frontend
+
+```bash
+cd Frontend
 npm install
 npm run dev
 ```
 
 Abra no navegador o endereço local informado pelo Vite no terminal.
+
+## Configuração das variáveis de ambiente
+
+O projeto utiliza arquivos `.env` para armazenar configurações necessárias à comunicação entre o Frontend, o Backend e o banco de dados MySQL.
+
+Para executar o projeto localmente, configure os arquivos de ambiente de cada aplicação.
+
+### Backend
+
+Dentro da pasta `Backend`, copie o arquivo `.env.example` e renomeie a cópia para `.env`.
+
+Configure as seguintes variáveis:
+
+| Variável | Descrição |
+|---|---|
+| `PORT` | Porta utilizada pelo servidor Backend |
+| `DB_HOST` | Endereço do servidor MySQL |
+| `DB_USER` | Usuário de acesso ao MySQL |
+| `DB_PASSWORD` | Senha do usuário MySQL |
+| `DB_NAME` | Nome do banco de dados utilizado |
+
+### Frontend
+
+Dentro da pasta `Frontend`, copie o arquivo `.env.example` e renomeie a cópia para `.env`.
+
+Configure a variável:
+
+| Variável | Descrição |
+|---|---|
+| `VITE_API_URL` | Endereço base da API do Backend |
+
+No ambiente local, o endereço padrão utilizado é `http://localhost:3001`.
+
+**Importante:** os arquivos `.env` contêm configurações locais e não devem ser enviados ao GitHub ou compartilhados publicamente. Os arquivos `.env.example` podem ser incluídos no repositório para orientar a configuração do ambiente, sem expor senhas ou credenciais.
+
 
 ## Equipe
 
