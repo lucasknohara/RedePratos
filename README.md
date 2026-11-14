@@ -12,8 +12,7 @@ Alimentos próprios para consumo podem ser descartados por falta de canais simpl
 
 A plataforma trabalha com dois perfis:
 
-- **Doador:** pessoa ou representante de um estabelecimento que disponibiliza alimentos. 
-
+- **Doador:** pessoa ou representante de um estabelecimento que disponibiliza alimentos.
 - **Instituição:** organização social que procura alimentos para atender às pessoas acompanhadas por seu trabalho.
 
 ## Como funciona
@@ -48,11 +47,12 @@ A reserva depende da aprovação do Doador. A doação só deve ser considerada 
 
 A interface utiliza componentes reutilizáveis para manter consistência visual e facilitar a manutenção.
 
-**Próxima etapa — Backend:**
+**Backend:**
 
-A versão atual é um protótipo Front-end: ainda não possui API integrada, autenticação real ou persistência compartilhada. As interações e os dados apresentados são demonstrativos e controlados localmente pela interface.
-
-O planejamento prevê desenvolver e integrar uma API com operações CRUD, autenticação, controle de acesso por perfil e persistência de dados. As tecnologias de armazenamento e hospedagem serão definidas conforme os requisitos da disciplina e a orientação docente.
+- JavaScript (Node)
+- Express
+- MySQL
+- cors
 
 ## Como executar localmente
 
@@ -64,7 +64,7 @@ O planejamento prevê desenvolver e integrar uma API com operações CRUD, auten
 ### Instalação
 
 ```bash
-git clone <https://github.com/lucasknohara/RedePratos>
+git clone https://github.com/lucasknohara/RedePratos.git
 cd RedePratos
 npm install
 npm run dev
@@ -74,4 +74,69 @@ Abra no navegador o endereço local informado pelo Vite no terminal.
 
 ## Equipe
 
-- **Integrantes:** Lucas Kaoru Nohara Pereira - RM 572755, Matheus Lemos Lima - RM 570105
+- **Integrantes:** Lucas Kaoru Nohara Pereira - RM 572755, Matheus Lemos Lima - RM 570105.
+
+---
+
+## Regras de funcionamento
+
+- Cada usuário possui um dos dois perfis disponíveis: Doador ou Instituição.
+- O Doador é responsável por cadastrar os alimentos e disponibilizá-los para doação.
+- Uma doação pode receber solicitações de diferentes instituições.
+- O Doador analisa as solicitações e escolhe se deseja aceitá-las ou recusá-las.
+- Quando uma solicitação é aceita, a doação fica reservada para a instituição selecionada.
+- A conclusão depende da confirmação da entrega pelo Doador e pela Instituição.
+- Após as duas confirmações, a solicitação e a doação são marcadas como concluídas, e a quantidade correspondente é descontada do estoque do Doador.
+
+## Organização do projeto
+
+O repositório está organizado em três partes principais:
+
+```text
+RedePratos/
+├── Frontend/
+│   └── Aplicação React
+├── Backend/
+│   └── API Node.js e Express
+├── Banco/
+│   └── Scripts e estrutura do banco de dados
+└── README.md
+```
+
+## Banco de dados
+
+O projeto utiliza MySQL para armazenar as informações da plataforma.
+
+Entre as principais entidades estão:
+
+- **Usuários:** dados cadastrais, informações de contato e tipo de perfil.
+- **Alimentos:** produtos cadastrados pelos doadores, com quantidade, unidade e validade.
+- **Doações:** ofertas de alimentos disponibilizadas para as instituições.
+- **Solicitações:** pedidos realizados pelas instituições e acompanhamento de seus respectivos status.
+
+O relacionamento entre essas entidades permite acompanhar o processo desde o cadastro do alimento até a confirmação da entrega.
+
+## Indicadores de impacto
+
+A plataforma também apresenta indicadores para demonstrar os resultados das doações concluídas.
+
+Para os Doadores, são apresentados:
+
+- Número de doações concluídas.
+- Quantidade de alimentos doados, agrupada por unidade.
+- Instituições alcançadas.
+- Níveis e conquistas de acordo com as doações realizadas.
+
+Para as Instituições, são apresentados:
+
+- Número de doações recebidas.
+- Quantidade de alimentos recebidos, agrupada por unidade.
+- Número de doadores parceiros.
+
+Os indicadores consideram as entregas confirmadas pelos dois lados da doação.
+
+## Demonstração
+
+O Front-end do RedePratos está publicado na Vercel e pode ser acessado pelo link:
+
+https://rede-pratos.vercel.app/
