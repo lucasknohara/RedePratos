@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -18,12 +18,12 @@ import {
 } from 'lucide-react'
 
 import DonorSidebar from '../../../components/layout/DonorSidebar/DonorSidebar.jsx'
+import { apiRequest } from '../../../services/api.js'
 
-// Dados demonstrativos.
 const perfilInicial = {
-  nome: 'Lucas',
-  email: 'lucas@exemplo.com',
-  telefone: '(11) 99999-9999',
+  nome: '',
+  email: '',
+  telefone: '',
   origem: 'residencia'
 }
 
@@ -58,7 +58,61 @@ function Profile() {
   const [perfil, setPerfil] = useState(perfilInicial)
   const [formulario, setFormulario] = useState(perfilInicial)
   const [editando, setEditando] = useState(false)
+  const [carregando, setCarregando] = useState(true)
+  const [salvando, setSalvando] = useState(false)
   const [mensagem, setMensagem] = useState('')
+  const [erro, setErro] = useState('')
+
+  const [idUsuario] = useState(() => {
+    try {
+      const usuario = JSON.parse(localStorage.getItem('usuario'))
+      return usuario?.id || null
+    } catch {
+      return null
+    }
+  })
+
+  useEffect(() => {
+    let componenteAtivo = true
+
+    async function carregarPerfil() {
+      if (!idUsuario) {
+        setErro('Não foi possível identificar o usuário. Faça login novamente.')
+        setCarregando(false)
+        return
+      }
+
+      try {
+        const dados = await apiRequest(`/api/usuarios/${idUsuario}/perfil`)
+
+        if (!componenteAtivo) return
+
+        const perfilCarregado = {
+          nome: dados.nome || '',
+          email: dados.email || '',
+          telefone: dados.telefone || '',
+          origem: dados.origem || 'residencia'
+        }
+
+        setPerfil(perfilCarregado)
+        setFormulario(perfilCarregado)
+      } catch (error) {
+        if (componenteAtivo) {
+          setErro(error.message || 'Não foi possível carregar seu perfil.')
+        }
+      } finally {
+        if (componenteAtivo) {
+          setCarregando(false)
+        }
+      }
+    }
+
+    carregarPerfil()
+
+    return () => {
+      componenteAtivo = false
+    }
+  }, [idUsuario])
 
   const inicial = perfil.nome.trim()
     ? perfil.nome.trim().charAt(0).toUpperCase()
@@ -69,41 +123,90 @@ function Profile() {
   function iniciarEdicao() {
     setFormulario(perfil)
     setMensagem('')
+    setErro('')
     setEditando(true)
   }
 
   function cancelarEdicao() {
     setFormulario(perfil)
+    setErro('')
     setEditando(false)
   }
 
   function handleChange(event) {
     const { name, value } = event.target
 
-    setFormulario({
-      ...formulario,
+    setFormulario((atual) => ({
+      ...atual,
       [name]: value
-    })
+    }))
   }
 
-  function salvarPerfil(event) {
+  async function salvarPerfil(event) {
     event.preventDefault()
 
-    setPerfil(formulario)
-    setEditando(false)
-    setMensagem('Perfil atualizado com sucesso!')
+    if (salvando) return
+
+    setSalvando(true)
+    setErro('')
+    setMensagem('')
+
+    try {
+      const dadosAtualizados = await apiRequest(
+        `/api/usuarios/${idUsuario}/perfil`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            nome: formulario.nome,
+            email: formulario.email,
+            telefone: formulario.telefone,
+            origem: formulario.origem
+          })
+        }
+      )
+
+      const perfilAtualizado = {
+        nome: dadosAtualizados.nome || '',
+        email: dadosAtualizados.email || '',
+        telefone: dadosAtualizados.telefone || '',
+        origem: dadosAtualizados.origem || 'residencia'
+      }
+
+      setPerfil(perfilAtualizado)
+      setFormulario(perfilAtualizado)
+
+      const usuarioSalvo = JSON.parse(
+        localStorage.getItem('usuario') || '{}'
+      )
+
+      localStorage.setItem(
+        'usuario',
+        JSON.stringify({
+          ...usuarioSalvo,
+          nome: perfilAtualizado.nome,
+          email: perfilAtualizado.email
+        })
+      )
+
+      setEditando(false)
+      setMensagem('Perfil atualizado com sucesso!')
+    } catch (error) {
+      setErro(error.message || 'Não foi possível atualizar seu perfil.')
+    } finally {
+      setSalvando(false)
+    }
   }
 
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
 
-      {/* MENU LATERAL */}
       <DonorSidebar />
 
-      {/* CONTEÚDO PRINCIPAL */}
       <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
-        {/* CABEÇALHO */}
         <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
 
           <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
@@ -125,7 +228,6 @@ function Profile() {
 
         </header>
 
-        {/* APRESENTAÇÃO */}
         <section className="tw:py-[30px]">
 
           <span className="tw:text-[10px] tw:font-bold tw:tracking-[1px] tw:text-[#689171]">
@@ -142,7 +244,6 @@ function Profile() {
 
         </section>
 
-        {/* CARTÃO DE PERFIL */}
         <section className="tw:mb-[22px] tw:flex tw:items-center tw:gap-5 tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[600px]:flex-col tw:max-[600px]:items-start">
 
           <div className="tw:grid tw:size-[76px] tw:shrink-0 tw:place-items-center tw:rounded-full tw:border-[5px] tw:border-[#dceee0] tw:bg-[#4fa86c] tw:text-[22px] tw:font-bold tw:text-white">
@@ -152,7 +253,7 @@ function Profile() {
           <div className="tw:min-w-0 tw:flex-1">
 
             <h2 className="tw:text-[19px] tw:font-bold tw:text-[#244d39]">
-              {perfil.nome}
+              {carregando ? 'Carregando perfil...' : perfil.nome || 'Usuário'}
             </h2>
 
             <p className="tw:mt-1 tw:text-[11px] tw:text-[#8c978e]">
@@ -169,7 +270,8 @@ function Profile() {
           <button
             type="button"
             onClick={iniciarEdicao}
-            className="tw:flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-[#e8f5e9] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#39845A] tw:transition-colors tw:hover:bg-[#d8eddb]"
+            disabled={carregando || !idUsuario}
+            className="tw:flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-[#e8f5e9] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#39845A] tw:transition-colors tw:hover:bg-[#d8eddb] tw:disabled:cursor-not-allowed tw:disabled:opacity-50"
           >
             <Pencil size={14} />
             Editar perfil
@@ -177,14 +279,18 @@ function Profile() {
 
         </section>
 
-        {/* MENSAGEM DE SUCESSO */}
         {mensagem && (
           <p className="tw:mb-5 tw:rounded-xl tw:bg-[#e8f5e9] tw:p-3 tw:text-sm tw:text-[#39845A]">
             {mensagem}
           </p>
         )}
 
-        {/* SEU IMPACTO */}
+        {erro && (
+          <p className="tw:mb-5 tw:rounded-xl tw:bg-[#fff0ed] tw:p-3 tw:text-sm tw:text-[#b94b42]">
+            {erro}
+          </p>
+        )}
+
         <section className="tw:mb-[22px]">
 
           <div className="tw:mb-3 tw:flex tw:items-center tw:justify-between">
@@ -241,7 +347,6 @@ function Profile() {
 
         </section>
 
-        {/* JORNADA E PROGRESSO */}
         <section className="tw:mb-[25px] tw:rounded-2xl tw:bg-[#124638] tw:p-6 tw:text-white tw:max-[600px]:p-5">
 
           <div className="tw:flex tw:items-center tw:gap-3">
@@ -284,7 +389,6 @@ function Profile() {
 
         </section>
 
-        {/* CONQUISTAS */}
         <section className="tw:mb-[25px]">
 
           <div className="tw:mb-4 tw:flex tw:items-center tw:justify-between">
@@ -332,7 +436,6 @@ function Profile() {
 
         </section>
 
-        {/* MINHA CONTA */}
         <section className="tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5">
 
           <h2 className="tw:mb-4 tw:text-[16px] tw:font-bold tw:text-[#244d39]">
@@ -391,7 +494,6 @@ function Profile() {
 
       </main>
 
-      {/* MODAL DE EDIÇÃO DO PERFIL */}
       {editando && (
         <div className="tw:fixed tw:inset-0 tw:z-50 tw:flex tw:items-center tw:justify-center tw:bg-black/40 tw:px-4 tw:py-6">
 
@@ -420,7 +522,8 @@ function Profile() {
               <button
                 type="button"
                 onClick={cancelarEdicao}
-                className="tw:grid tw:size-9 tw:place-items-center tw:rounded-full tw:text-[#78847b] tw:hover:bg-[#f3f5f1]"
+                disabled={salvando}
+                className="tw:grid tw:size-9 tw:place-items-center tw:rounded-full tw:text-[#78847b] tw:hover:bg-[#f3f5f1] tw:disabled:opacity-50"
                 aria-label="Fechar"
               >
                 <X size={20} />
@@ -511,17 +614,19 @@ function Profile() {
                 <button
                   type="button"
                   onClick={cancelarEdicao}
-                  className="tw:rounded-xl tw:border tw:border-[#DDE3D9] tw:px-5 tw:py-3 tw:text-[12px] tw:font-semibold tw:text-[#748278] tw:hover:bg-[#f7f8f5]"
+                  disabled={salvando}
+                  className="tw:rounded-xl tw:border tw:border-[#DDE3D9] tw:px-5 tw:py-3 tw:text-[12px] tw:font-semibold tw:text-[#748278] tw:hover:bg-[#f7f8f5] tw:disabled:opacity-50"
                 >
                   Cancelar
                 </button>
 
                 <button
                   type="submit"
-                  className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:rounded-xl tw:bg-[#52745B] tw:px-5 tw:py-3 tw:text-[12px] tw:font-semibold tw:text-white tw:transition-colors tw:hover:bg-[#3D6047]"
+                  disabled={salvando}
+                  className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:rounded-xl tw:bg-[#52745B] tw:px-5 tw:py-3 tw:text-[12px] tw:font-semibold tw:text-white tw:transition-colors tw:hover:bg-[#3D6047] tw:disabled:cursor-not-allowed tw:disabled:opacity-60"
                 >
                   <Save size={15} />
-                  Salvar alterações
+                  {salvando ? 'Salvando...' : 'Salvar alterações'}
                 </button>
 
               </div>

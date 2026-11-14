@@ -14,9 +14,26 @@ async function loginUsuarioController(req, res) {
     const resultado = await usuarioService.loginUsuarioService(email, senha);
 
     res.status(200).json(resultado);
-}
+};
+
+async function buscarPerfilPorIdController(req, res) {
+    const id_usuario = req.params.id;
+    const resultado = await usuarioService.buscarPerfilPorIdService(id_usuario);
+
+    res.status(200).json(resultado);
+};
+
+async function atualizarPerfilController(req, res) {
+    const id_usuario = req.params.id;
+    const { nome, email, telefone, origem, tipo_instituicao, tipo, regiao, descricao } = req.body;
+    const resultado = await usuarioService.atualizarPerfilService(id_usuario, nome, email, telefone, origem, tipo_instituicao ?? tipo, regiao, descricao);
+
+    res.status(200).json(resultado);
+};
 
 module.exports = {
     criarUsuarioController,
-    loginUsuarioController
-}
+    loginUsuarioController,
+    buscarPerfilPorIdController,
+    atualizarPerfilController
+};

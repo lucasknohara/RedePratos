@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   Bell,
@@ -16,15 +16,15 @@ import {
 } from 'lucide-react'
 
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
+import { apiRequest } from '../../../services/api.js'
 
 const perfilInicial = {
-  nome: 'Instituição Esperança',
-  email: 'contato@exemplo.org',
-  telefone: '(11) 99999-9999',
+  nome: '',
+  email: '',
+  telefone: '',
   tipo: 'ong',
-  regiao: 'Região central',
-  descricao:
-    'Somos uma instituição dedicada ao apoio de famílias em situação de vulnerabilidade e à promoção da solidariedade na comunidade.'
+  regiao: '',
+  descricao: ''
 }
 
 const tiposInstituicao = [
@@ -38,7 +38,63 @@ function Profile() {
   const [perfil, setPerfil] = useState(perfilInicial)
   const [formulario, setFormulario] = useState(perfilInicial)
   const [editando, setEditando] = useState(false)
+  const [carregando, setCarregando] = useState(true)
+  const [salvando, setSalvando] = useState(false)
   const [mensagem, setMensagem] = useState('')
+  const [erro, setErro] = useState('')
+
+  const [idUsuario] = useState(() => {
+    try {
+      const usuario = JSON.parse(localStorage.getItem('usuario'))
+      return usuario?.id || null
+    } catch {
+      return null
+    }
+  })
+
+  useEffect(() => {
+    let componenteAtivo = true
+
+    async function carregarPerfil() {
+      if (!idUsuario) {
+        setErro('Não foi possível identificar o usuário. Faça login novamente.')
+        setCarregando(false)
+        return
+      }
+
+      try {
+        const dados = await apiRequest(`/api/usuarios/${idUsuario}/perfil`)
+
+        if (!componenteAtivo) return
+
+        const perfilCarregado = {
+          nome: dados.nome || '',
+          email: dados.email || '',
+          telefone: dados.telefone || '',
+          tipo: dados.tipo_instituicao || 'ong',
+          regiao: dados.regiao || '',
+          descricao: dados.descricao || ''
+        }
+
+        setPerfil(perfilCarregado)
+        setFormulario(perfilCarregado)
+      } catch (error) {
+        if (componenteAtivo) {
+          setErro(error.message || 'Não foi possível carregar o perfil da instituição.')
+        }
+      } finally {
+        if (componenteAtivo) {
+          setCarregando(false)
+        }
+      }
+    }
+
+    carregarPerfil()
+
+    return () => {
+      componenteAtivo = false
+    }
+  }, [idUsuario])
 
   const tipoSelecionado = tiposInstituicao.find(
     (tipo) => tipo.valor === perfil.tipo
@@ -47,11 +103,13 @@ function Profile() {
   function iniciarEdicao() {
     setFormulario(perfil)
     setMensagem('')
+    setErro('')
     setEditando(true)
   }
 
   function cancelarEdicao() {
     setFormulario(perfil)
+    setErro('')
     setEditando(false)
   }
 
@@ -64,28 +122,79 @@ function Profile() {
     }))
   }
 
-  function salvarPerfil(event) {
+  async function salvarPerfil(event) {
     event.preventDefault()
 
-    if (!formulario.nome.trim() || !formulario.regiao.trim()) {
-      return
-    }
+    if (salvando) return
 
-    setPerfil(formulario)
-    setEditando(false)
-    setMensagem('Informações atualizadas nesta demonstração!')
+    setSalvando(true)
+    setMensagem('')
+    setErro('')
+
+    try {
+      const dadosAtualizados = await apiRequest(
+        `/api/usuarios/${idUsuario}/perfil`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            nome: formulario.nome,
+            email: formulario.email,
+            telefone: formulario.telefone,
+            tipo_instituicao: formulario.tipo,
+            regiao: formulario.regiao,
+            descricao: formulario.descricao
+          })
+        }
+      )
+
+      const perfilAtualizado = {
+        nome: dadosAtualizados.nome || '',
+        email: dadosAtualizados.email || '',
+        telefone: dadosAtualizados.telefone || '',
+        tipo: dadosAtualizados.tipo_instituicao || 'ong',
+        regiao: dadosAtualizados.regiao || '',
+        descricao: dadosAtualizados.descricao || ''
+      }
+
+      setPerfil(perfilAtualizado)
+      setFormulario(perfilAtualizado)
+
+      let usuarioSalvo = {}
+
+      try {
+        usuarioSalvo = JSON.parse(localStorage.getItem('usuario') || '{}')
+      } catch {
+        usuarioSalvo = {}
+      }
+
+      localStorage.setItem(
+        'usuario',
+        JSON.stringify({
+          ...usuarioSalvo,
+          nome: perfilAtualizado.nome,
+          email: perfilAtualizado.email
+        })
+      )
+
+      setEditando(false)
+      setMensagem('Informações atualizadas com sucesso!')
+    } catch (error) {
+      setErro(error.message || 'Não foi possível atualizar o perfil.')
+    } finally {
+      setSalvando(false)
+    }
   }
 
   return (
     <div className="tw:flex tw:min-h-screen tw:bg-[#f7f6ef] tw:max-[760px]:flex-col">
 
-      {/* MENU LATERAL */}
       <InstitutionSidebar />
 
-      {/* CONTEÚDO PRINCIPAL */}
       <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
-        {/* CABEÇALHO */}
         <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
 
           <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
@@ -107,7 +216,6 @@ function Profile() {
 
         </header>
 
-        {/* APRESENTAÇÃO */}
         <section className="tw:py-[30px]">
 
           <span className="tw:text-[10px] tw:font-bold tw:tracking-[1px] tw:text-[#689171]">
@@ -124,7 +232,6 @@ function Profile() {
 
         </section>
 
-        {/* CARTÃO DE IDENTIFICAÇÃO */}
         <section className="tw:mb-[22px] tw:flex tw:items-center tw:gap-5 tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[600px]:flex-col tw:max-[600px]:items-start">
 
           <div className="tw:grid tw:size-[76px] tw:shrink-0 tw:place-items-center tw:rounded-full tw:border-[5px] tw:border-[#dceee0] tw:bg-[#e8f0e5] tw:text-[#477b57]">
@@ -134,7 +241,7 @@ function Profile() {
           <div className="tw:min-w-0 tw:flex-1">
 
             <h2 className="tw:text-[19px] tw:font-bold tw:text-[#244d39]">
-              {perfil.nome}
+              {carregando ? 'Carregando perfil...' : perfil.nome || 'Instituição'}
             </h2>
 
             <p className="tw:mt-1 tw:text-[11px] tw:text-[#8c978e]">
@@ -151,7 +258,8 @@ function Profile() {
           <button
             type="button"
             onClick={iniciarEdicao}
-            className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-full tw:bg-[#e8f5e9] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#39845A] tw:transition-colors tw:hover:bg-[#d8eddb]"
+            disabled={carregando || !idUsuario}
+            className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-full tw:bg-[#e8f5e9] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#39845A] tw:transition-colors tw:hover:bg-[#d8eddb] tw:disabled:cursor-not-allowed tw:disabled:opacity-50"
           >
             <Pencil size={14} />
             Editar perfil
@@ -159,17 +267,20 @@ function Profile() {
 
         </section>
 
-        {/* MENSAGEM DE SUCESSO */}
         {mensagem && (
           <p className="tw:mb-5 tw:rounded-xl tw:bg-[#e8f5e9] tw:p-3 tw:text-sm tw:text-[#39845A]">
             {mensagem}
           </p>
         )}
 
-        {/* CONTEÚDO DO PERFIL */}
+        {erro && (
+          <p className="tw:mb-5 tw:rounded-xl tw:bg-[#fff0ed] tw:p-3 tw:text-sm tw:text-[#b94b42]">
+            {erro}
+          </p>
+        )}
+
         <div className="tw:grid tw:grid-cols-[1.4fr_1fr] tw:items-start tw:gap-5 tw:max-[950px]:grid-cols-1">
 
-          {/* INFORMAÇÕES CADASTRAIS */}
           <section className="tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-6 tw:max-[600px]:p-4">
 
             <div className="tw:mb-6">
@@ -184,7 +295,6 @@ function Profile() {
 
             <div className="tw:space-y-5">
 
-              {/* NOME */}
               <div>
                 <label className="tw:mb-2 tw:block tw:text-[11px] tw:font-semibold tw:text-[#78847b]">
                   Nome da instituição
@@ -199,7 +309,6 @@ function Profile() {
                 </div>
               </div>
 
-              {/* E-MAIL */}
               <div>
                 <label className="tw:mb-2 tw:block tw:text-[11px] tw:font-semibold tw:text-[#78847b]">
                   E-mail de contato
@@ -214,7 +323,6 @@ function Profile() {
                 </div>
               </div>
 
-              {/* TELEFONE */}
               <div>
                 <label className="tw:mb-2 tw:block tw:text-[11px] tw:font-semibold tw:text-[#78847b]">
                   Telefone
@@ -229,7 +337,6 @@ function Profile() {
                 </div>
               </div>
 
-              {/* TIPO DE INSTITUIÇÃO */}
               <div>
                 <label className="tw:mb-2 tw:block tw:text-[11px] tw:font-semibold tw:text-[#78847b]">
                   Tipo de organização
@@ -244,7 +351,6 @@ function Profile() {
                 </div>
               </div>
 
-              {/* REGIÃO */}
               <div>
                 <label className="tw:mb-2 tw:block tw:text-[11px] tw:font-semibold tw:text-[#78847b]">
                   Região de atuação
@@ -261,7 +367,6 @@ function Profile() {
 
             </div>
 
-            {/* DESCRIÇÃO */}
             <div className="tw:mt-6 tw:border-t tw:border-[#f0f1ec] tw:pt-5">
 
               <h3 className="tw:mb-2 tw:text-[12px] tw:font-bold tw:text-[#344a3c]">
@@ -276,10 +381,8 @@ function Profile() {
 
           </section>
 
-          {/* COLUNA LATERAL */}
           <div className="tw:flex tw:flex-col tw:gap-5">
 
-            {/* ATUAÇÃO */}
             <section className="tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5">
 
               <div className="tw:mb-4 tw:flex tw:items-center tw:gap-3">
@@ -318,7 +421,6 @@ function Profile() {
 
             </section>
 
-            {/* PRIVACIDADE */}
             <section className="tw:rounded-2xl tw:border tw:border-[#dfe9dc] tw:bg-[#e8f0e5] tw:p-5">
 
               <div className="tw:flex tw:items-center tw:gap-2">
@@ -338,7 +440,6 @@ function Profile() {
 
             </section>
 
-            {/* DICA */}
             <section className="tw:flex tw:items-start tw:gap-3 tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5">
 
               <Info size={19} className="tw:mt-0.5 tw:shrink-0 tw:text-[#528463]" />
@@ -362,7 +463,6 @@ function Profile() {
 
       </main>
 
-      {/* MODAL DE EDIÇÃO */}
       {editando && (
         <div className="tw:fixed tw:inset-0 tw:z-50 tw:flex tw:items-center tw:justify-center tw:bg-black/40 tw:px-4 tw:py-6">
 
@@ -391,7 +491,8 @@ function Profile() {
               <button
                 type="button"
                 onClick={cancelarEdicao}
-                className="tw:grid tw:size-9 tw:place-items-center tw:rounded-full tw:text-[#78847b] tw:transition-colors tw:hover:bg-[#f3f5f1]"
+                disabled={salvando}
+                className="tw:grid tw:size-9 tw:place-items-center tw:rounded-full tw:text-[#78847b] tw:transition-colors tw:hover:bg-[#f3f5f1] tw:disabled:opacity-50"
                 aria-label="Fechar"
               >
                 <X size={20} />
@@ -523,22 +624,30 @@ function Profile() {
                 </p>
               </div>
 
+              {erro && (
+                <p className="tw:rounded-xl tw:bg-[#fff0ed] tw:p-3 tw:text-sm tw:text-[#b94b42]">
+                  {erro}
+                </p>
+              )}
+
               <div className="tw:flex tw:justify-end tw:gap-3 tw:border-t tw:border-[#f0f1ec] tw:pt-5 tw:max-[450px]:flex-col">
 
                 <button
                   type="button"
                   onClick={cancelarEdicao}
-                  className="tw:rounded-xl tw:border tw:border-[#DDE3D9] tw:px-5 tw:py-3 tw:text-[12px] tw:font-semibold tw:text-[#748278] tw:transition-colors tw:hover:bg-[#f7f8f5]"
+                  disabled={salvando}
+                  className="tw:rounded-xl tw:border tw:border-[#DDE3D9] tw:px-5 tw:py-3 tw:text-[12px] tw:font-semibold tw:text-[#748278] tw:transition-colors tw:hover:bg-[#f7f8f5] tw:disabled:opacity-50"
                 >
                   Cancelar
                 </button>
 
                 <button
                   type="submit"
-                  className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:rounded-xl tw:bg-[#52745B] tw:px-5 tw:py-3 tw:text-[12px] tw:font-semibold tw:text-white tw:transition-colors tw:hover:bg-[#3D6047]"
+                  disabled={salvando}
+                  className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:rounded-xl tw:bg-[#52745B] tw:px-5 tw:py-3 tw:text-[12px] tw:font-semibold tw:text-white tw:transition-colors tw:hover:bg-[#3D6047] tw:disabled:cursor-not-allowed tw:disabled:opacity-60"
                 >
                   <Save size={15} />
-                  Salvar alterações
+                  {salvando ? 'Salvando...' : 'Salvar alterações'}
                 </button>
 
               </div>
