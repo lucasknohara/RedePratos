@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 
 import {
@@ -12,7 +13,9 @@ import {
   ShieldCheck,
   Users,
   HandHeart,
-  Info
+  Info,
+  PackageCheck,
+  Scale
 } from 'lucide-react'
 
 import InstitutionSidebar from '../../../components/layout/InstitutionSidebar/InstitutionSidebar.jsx'
@@ -34,6 +37,24 @@ const tiposInstituicao = [
   { valor: 'outro', label: 'Outro' }
 ]
 
+const formatador = new Intl.NumberFormat('pt-BR', {
+  maximumFractionDigits: 2
+})
+
+function formatarQuantidades(quantidades) {
+  const unidades = Object.entries(quantidades)
+
+  if (unidades.length === 0) {
+    return '0'
+  }
+
+  return unidades
+    .map(([unidade, quantidade]) => {
+      return `${formatador.format(quantidade)} ${unidade}`
+    })
+    .join(' / ')
+}
+
 function Profile() {
   const [perfil, setPerfil] = useState(perfilInicial)
   const [formulario, setFormulario] = useState(perfilInicial)
@@ -42,6 +63,15 @@ function Profile() {
   const [salvando, setSalvando] = useState(false)
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
+
+  const [impacto, setImpacto] = useState({
+    doacoesRecebidas: 0,
+    doadoresParceiros: 0,
+    quantidadesPorUnidade: {}
+  })
+
+  const [carregandoImpacto, setCarregandoImpacto] = useState(true)
+  const [erroImpacto, setErroImpacto] = useState('')
 
   const [idUsuario] = useState(() => {
     try {
@@ -52,6 +82,7 @@ function Profile() {
     }
   })
 
+  // Carregamento do perfil
   useEffect(() => {
     let componenteAtivo = true
 
@@ -96,10 +127,102 @@ function Profile() {
     }
   }, [idUsuario])
 
+  // Carregamento do impacto da instituição
+  useEffect(() => {
+    let componenteAtivo = true
+
+    async function carregarImpacto() {
+      if (!idUsuario) {
+        setErroImpacto('Não foi possível identificar a instituição.')
+        setCarregandoImpacto(false)
+        return
+      }
+
+      try {
+        const dados = await apiRequest(
+          `/api/solicitacoes/instituicao?id_instituicao=${idUsuario}`
+        )
+
+        if (!componenteAtivo) return
+
+        const solicitacoes = Array.isArray(dados)
+          ? dados
+          : dados?.solicitacoes
+
+        if (!Array.isArray(solicitacoes)) {
+          throw new Error('Não foi possível carregar os dados da instituição.')
+        }
+
+        const concluidas = solicitacoes.filter(
+          (solicitacao) => solicitacao.status === 'concluida'
+        )
+
+        const doacoesUnicas = new Map()
+
+        concluidas.forEach((solicitacao) => {
+          const idDoacao = solicitacao.id_doacao ?? solicitacao.id_solicitacao
+
+          if (idDoacao !== null && idDoacao !== undefined) {
+            doacoesUnicas.set(String(idDoacao), solicitacao)
+          }
+        })
+
+        const doacoesRecebidas = Array.from(doacoesUnicas.values())
+
+        const doadores = new Set(
+          doacoesRecebidas
+            .map((doacao) => doacao.id_doador)
+            .filter((id) => id !== null && id !== undefined)
+            .map(String)
+        )
+
+        const quantidades = new Map()
+
+        doacoesRecebidas.forEach((doacao) => {
+          const quantidade = Number(doacao.quantidade)
+
+          if (!Number.isFinite(quantidade) || quantidade <= 0) {
+            return
+          }
+
+          const unidade = typeof doacao.unidade === 'string' && doacao.unidade.trim()
+            ? doacao.unidade.trim().toLowerCase()
+            : 'unidade'
+
+          quantidades.set(
+            unidade,
+            (quantidades.get(unidade) || 0) + quantidade
+          )
+        })
+
+        setImpacto({
+          doacoesRecebidas: doacoesRecebidas.length,
+          doadoresParceiros: doadores.size,
+          quantidadesPorUnidade: Object.fromEntries(quantidades)
+        })
+      } catch (error) {
+        if (componenteAtivo) {
+          setErroImpacto(error.message || 'Não foi possível carregar o impacto da instituição.')
+        }
+      } finally {
+        if (componenteAtivo) {
+          setCarregandoImpacto(false)
+        }
+      }
+    }
+
+    carregarImpacto()
+
+    return () => {
+      componenteAtivo = false
+    }
+  }, [idUsuario])
+
   const tipoSelecionado = tiposInstituicao.find(
     (tipo) => tipo.valor === perfil.tipo
   )
 
+  // Edição do perfil
   function iniciarEdicao() {
     setFormulario(perfil)
     setMensagem('')
@@ -195,6 +318,7 @@ function Profile() {
 
       <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
+        {/* Cabeçalho */}
         <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
 
           <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
@@ -216,6 +340,7 @@ function Profile() {
 
         </header>
 
+        {/* Apresentação */}
         <section className="tw:py-[30px]">
 
           <span className="tw:text-[10px] tw:font-bold tw:tracking-[1px] tw:text-[#689171]">
@@ -232,6 +357,7 @@ function Profile() {
 
         </section>
 
+        {/* Identificação da instituição */}
         <section className="tw:mb-[22px] tw:flex tw:items-center tw:gap-5 tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[600px]:flex-col tw:max-[600px]:items-start">
 
           <div className="tw:grid tw:size-[76px] tw:shrink-0 tw:place-items-center tw:rounded-full tw:border-[5px] tw:border-[#dceee0] tw:bg-[#e8f0e5] tw:text-[#477b57]">
@@ -258,7 +384,7 @@ function Profile() {
           <button
             type="button"
             onClick={iniciarEdicao}
-            disabled={carregando || !idUsuario}
+            disabled={carregando || !idUsuario || Boolean(erro)}
             className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-full tw:bg-[#e8f5e9] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#39845A] tw:transition-colors tw:hover:bg-[#d8eddb] tw:disabled:cursor-not-allowed tw:disabled:opacity-50"
           >
             <Pencil size={14} />
@@ -279,6 +405,87 @@ function Profile() {
           </p>
         )}
 
+        {/* Indicadores de impacto */}
+        <section className="tw:mb-[25px]">
+
+          <div className="tw:mb-3">
+            <h2 className="tw:text-[16px] tw:font-bold tw:text-[#244d39]">
+              Nosso impacto
+            </h2>
+
+            <p className="tw:mt-1 tw:text-[11px] tw:text-[#929b93]">
+              Acompanhe os alimentos recebidos e as parcerias realizadas.
+            </p>
+          </div>
+
+          {erroImpacto && (
+            <p className="tw:mb-3 tw:rounded-xl tw:bg-[#fff0ed] tw:p-3 tw:text-sm tw:text-[#b94b42]">
+              {erroImpacto}
+            </p>
+          )}
+
+          <div className="tw:grid tw:grid-cols-3 tw:gap-[17px] tw:max-[760px]:grid-cols-1">
+
+            <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5">
+
+              <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
+                <span>Doações recebidas</span>
+                <PackageCheck size={21} className="tw:text-[#528463]" />
+              </div>
+
+              <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
+                {carregandoImpacto ? '...' : impacto.doacoesRecebidas.toString().padStart(2, '0')}
+              </strong>
+
+              <small className="tw:text-[10px] tw:text-[#8c978e]">
+                Entregas confirmadas
+              </small>
+
+            </article>
+
+            <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5">
+
+              <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
+                <span>Alimentos recebidos</span>
+                <Scale size={21} className="tw:text-[#528463]" />
+              </div>
+
+              <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:break-words tw:text-[22px] tw:font-bold tw:text-[#244d39]">
+                {carregandoImpacto
+                  ? '...'
+                  : formatarQuantidades(impacto.quantidadesPorUnidade)}
+              </strong>
+
+              <small className="tw:text-[10px] tw:text-[#8c978e]">
+                Quantidade por unidade
+              </small>
+
+            </article>
+
+            <article className="tw:rounded-xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5">
+
+              <div className="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[12px] tw:text-[#748278]">
+                <span>Doadores parceiros</span>
+                <HandHeart size={21} className="tw:text-[#528463]" />
+              </div>
+
+              <strong className="tw:mt-[15px] tw:mb-[5px] tw:block tw:text-[29px] tw:font-bold tw:text-[#244d39]">
+                {carregandoImpacto
+                  ? '...'
+                  : impacto.doadoresParceiros.toString().padStart(2, '0')}
+              </strong>
+
+              <small className="tw:text-[10px] tw:text-[#8c978e]">
+                Pessoas e comércios que ajudaram
+              </small>
+
+            </article>
+
+          </div>
+
+        </section>
+
+        {/* Informações da instituição */}
         <div className="tw:grid tw:grid-cols-[1.4fr_1fr] tw:items-start tw:gap-5 tw:max-[950px]:grid-cols-1">
 
           <section className="tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-6 tw:max-[600px]:p-4">
@@ -381,6 +588,7 @@ function Profile() {
 
           </section>
 
+          {/* Coluna lateral */}
           <div className="tw:flex tw:flex-col tw:gap-5">
 
             <section className="tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5">
@@ -463,6 +671,7 @@ function Profile() {
 
       </main>
 
+      {/* Modal de edição */}
       {editando && (
         <div className="tw:fixed tw:inset-0 tw:z-50 tw:flex tw:items-center tw:justify-center tw:bg-black/40 tw:px-4 tw:py-6">
 
@@ -655,7 +864,6 @@ function Profile() {
             </form>
 
           </section>
-
         </div>
       )}
 

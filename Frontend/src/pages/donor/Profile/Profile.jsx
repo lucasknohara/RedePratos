@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -27,32 +28,50 @@ const perfilInicial = {
   origem: 'residencia'
 }
 
-const conquistas = [
+const conquistasBase = [
   {
     id: 1,
     titulo: 'Primeiro passo',
     descricao: 'Primeira doação',
+    meta: 1,
     icone: Sprout,
-    cor: 'tw:bg-[#DDF5DF] tw:text-[#39845A]',
-    status: 'Concluída'
+    cor: 'tw:bg-[#DDF5DF] tw:text-[#39845A]'
   },
   {
     id: 2,
     titulo: 'Doador solidário',
     descricao: '5 doações realizadas',
+    meta: 5,
     icone: Heart,
-    cor: 'tw:bg-[#FFE1E1] tw:text-[#D86A6A]',
-    status: 'Concluída'
+    cor: 'tw:bg-[#FFE1E1] tw:text-[#D86A6A]'
   },
   {
     id: 3,
     titulo: 'Guardião dos alimentos',
     descricao: '10 doações realizadas',
+    meta: 10,
     icone: Award,
-    cor: 'tw:bg-[#E1EAFF] tw:text-[#5487C2]',
-    status: 'Concluída'
+    cor: 'tw:bg-[#E1EAFF] tw:text-[#5487C2]'
   }
 ]
+
+const formatador = new Intl.NumberFormat('pt-BR', {
+  maximumFractionDigits: 2
+})
+
+function formatarQuantidades(quantidades) {
+  const unidades = Object.entries(quantidades)
+
+  if (unidades.length === 0) {
+    return '0'
+  }
+
+  return unidades
+    .map(([unidade, quantidade]) => {
+      return `${formatador.format(quantidade)} ${unidade}`
+    })
+    .join(' / ')
+}
 
 function Profile() {
   const [perfil, setPerfil] = useState(perfilInicial)
@@ -63,6 +82,14 @@ function Profile() {
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
 
+  const [impacto, setImpacto] = useState({
+    doacoesConcluidas: 0,
+    quantidadesPorUnidade: {}
+  })
+
+  const [carregandoImpacto, setCarregandoImpacto] = useState(true)
+  const [erroImpacto, setErroImpacto] = useState('')
+
   const [idUsuario] = useState(() => {
     try {
       const usuario = JSON.parse(localStorage.getItem('usuario'))
@@ -72,18 +99,15 @@ function Profile() {
     }
   })
 
+  // Carregamento do perfil e do impacto
   useEffect(() => {
     let componenteAtivo = true
 
     async function carregarPerfil() {
-      if (!idUsuario) {
-        setErro('Não foi possível identificar o usuário. Faça login novamente.')
-        setCarregando(false)
-        return
-      }
-
       try {
-        const dados = await apiRequest(`/api/usuarios/${idUsuario}/perfil`)
+        const dados = await apiRequest(
+          `/api/usuarios/${idUsuario}/perfil`
+        )
 
         if (!componenteAtivo) return
 
@@ -107,19 +131,124 @@ function Profile() {
       }
     }
 
+    async function carregarImpacto() {
+      try {
+        const dados = await apiRequest(
+          `/api/solicitacoes/doador?id_usuario=${idUsuario}`
+        )
+
+        if (!componenteAtivo) return
+
+        const solicitacoes = Array.isArray(dados)
+          ? dados
+          : dados?.solicitacoes
+
+        if (!Array.isArray(solicitacoes)) {
+          throw new Error('Não foi possível carregar os dados do impacto.')
+        }
+
+        const concluidas = solicitacoes.filter(
+          (solicitacao) => solicitacao.status === 'concluida'
+        )
+
+        const doacoesUnicas = new Map()
+
+        concluidas.forEach((solicitacao) => {
+          const idDoacao = solicitacao.id_doacao ?? solicitacao.id_solicitacao
+
+          if (idDoacao !== null && idDoacao !== undefined) {
+            doacoesUnicas.set(String(idDoacao), solicitacao)
+          }
+        })
+
+        const doacoesConcluidas = Array.from(doacoesUnicas.values())
+        const quantidades = new Map()
+
+        doacoesConcluidas.forEach((doacao) => {
+          const quantidade = Number(doacao.quantidade)
+
+          if (!Number.isFinite(quantidade) || quantidade <= 0) {
+            return
+          }
+
+          const unidade = typeof doacao.unidade === 'string' && doacao.unidade.trim()
+            ? doacao.unidade.trim().toLowerCase()
+            : 'unidade'
+
+          quantidades.set(
+            unidade,
+            (quantidades.get(unidade) || 0) + quantidade
+          )
+        })
+
+        setImpacto({
+          doacoesConcluidas: doacoesConcluidas.length,
+          quantidadesPorUnidade: Object.fromEntries(quantidades)
+        })
+      } catch (error) {
+        if (componenteAtivo) {
+          setErroImpacto(error.message || 'Não foi possível carregar seu impacto.')
+        }
+      } finally {
+        if (componenteAtivo) {
+          setCarregandoImpacto(false)
+        }
+      }
+    }
+
+    if (!idUsuario) {
+      setErro('Não foi possível identificar o usuário. Faça login novamente.')
+      setCarregando(false)
+      setCarregandoImpacto(false)
+      return
+    }
+
     carregarPerfil()
+    carregarImpacto()
 
     return () => {
       componenteAtivo = false
     }
   }, [idUsuario])
 
+  // Cálculo do nível e das conquistas
+  const metas = [1, 5, 10, 20]
+  const doacoesConcluidas = impacto.doacoesConcluidas
+
+  const nivelAtual = metas.filter(
+    (meta) => doacoesConcluidas >= meta
+  ).length
+
+  const nomesNiveis = [
+    'Novo colaborador',
+    'Primeiro passo',
+    'Doador solidário',
+    'Guardião dos alimentos',
+    'Embaixador RedePratos'
+  ]
+
+  const proximaMeta = metas.find(
+    (meta) => doacoesConcluidas < meta
+  )
+
+  const progresso = proximaMeta
+    ? Math.min((doacoesConcluidas / proximaMeta) * 100, 100)
+    : 100
+
+  const faltamDoacoes = proximaMeta
+    ? proximaMeta - doacoesConcluidas
+    : 0
+
+  const conquistas = conquistasBase.map((conquista) => ({
+    ...conquista,
+    desbloqueada: doacoesConcluidas >= conquista.meta
+  }))
+
   const inicial = perfil.nome.trim()
     ? perfil.nome.trim().charAt(0).toUpperCase()
     : 'U'
 
-  const progresso = Math.min((12 / 20) * 100, 100)
-
+  // Edição do perfil
   function iniciarEdicao() {
     setFormulario(perfil)
     setMensagem('')
@@ -178,9 +307,15 @@ function Profile() {
       setPerfil(perfilAtualizado)
       setFormulario(perfilAtualizado)
 
-      const usuarioSalvo = JSON.parse(
-        localStorage.getItem('usuario') || '{}'
-      )
+      let usuarioSalvo = {}
+
+      try {
+        usuarioSalvo = JSON.parse(
+          localStorage.getItem('usuario') || '{}'
+        )
+      } catch {
+        usuarioSalvo = {}
+      }
 
       localStorage.setItem(
         'usuario',
@@ -207,6 +342,7 @@ function Profile() {
 
       <main className="tw:min-w-0 tw:flex-1 tw:px-[45px] tw:pb-[35px] tw:max-[1100px]:px-[25px] tw:max-[1100px]:pb-[30px] tw:max-[760px]:px-[18px] tw:max-[760px]:pb-[25px]">
 
+        {/* Cabeçalho */}
         <header className="tw:flex tw:h-[75px] tw:items-center tw:justify-between tw:border-b tw:border-[#e8eae2]">
 
           <div className="tw:flex tw:items-center tw:gap-[10px] tw:text-[12px] tw:text-[#87938a] tw:max-[450px]:text-[10px]">
@@ -228,6 +364,7 @@ function Profile() {
 
         </header>
 
+        {/* Apresentação */}
         <section className="tw:py-[30px]">
 
           <span className="tw:text-[10px] tw:font-bold tw:tracking-[1px] tw:text-[#689171]">
@@ -244,6 +381,7 @@ function Profile() {
 
         </section>
 
+        {/* Cartão de perfil */}
         <section className="tw:mb-[22px] tw:flex tw:items-center tw:gap-5 tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5 tw:max-[600px]:flex-col tw:max-[600px]:items-start">
 
           <div className="tw:grid tw:size-[76px] tw:shrink-0 tw:place-items-center tw:rounded-full tw:border-[5px] tw:border-[#dceee0] tw:bg-[#4fa86c] tw:text-[22px] tw:font-bold tw:text-white">
@@ -270,7 +408,7 @@ function Profile() {
           <button
             type="button"
             onClick={iniciarEdicao}
-            disabled={carregando || !idUsuario}
+            disabled={carregando || !idUsuario || Boolean(erro)}
             className="tw:flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-[#e8f5e9] tw:px-4 tw:py-2.5 tw:text-[11px] tw:font-semibold tw:text-[#39845A] tw:transition-colors tw:hover:bg-[#d8eddb] tw:disabled:cursor-not-allowed tw:disabled:opacity-50"
           >
             <Pencil size={14} />
@@ -291,6 +429,7 @@ function Profile() {
           </p>
         )}
 
+        {/* Seu impacto */}
         <section className="tw:mb-[22px]">
 
           <div className="tw:mb-3 tw:flex tw:items-center tw:justify-between">
@@ -316,8 +455,10 @@ function Profile() {
                 className="tw:mx-auto tw:mb-2 tw:text-[#54845D]"
               />
 
-              <strong className="tw:block tw:text-[25px] tw:font-bold tw:text-[#244d39]">
-                35 kg
+              <strong className="tw:block tw:break-words tw:text-[22px] tw:font-bold tw:text-[#244d39]">
+                {carregandoImpacto
+                  ? '...'
+                  : formatarQuantidades(impacto.quantidadesPorUnidade)}
               </strong>
 
               <span className="tw:mt-1 tw:block tw:text-[11px] tw:text-[#87938a]">
@@ -334,7 +475,9 @@ function Profile() {
               />
 
               <strong className="tw:block tw:text-[25px] tw:font-bold tw:text-[#39845A]">
-                12
+                {carregandoImpacto
+                  ? '...'
+                  : doacoesConcluidas.toString().padStart(2, '0')}
               </strong>
 
               <span className="tw:mt-1 tw:block tw:text-[11px] tw:text-[#87938a]">
@@ -345,8 +488,15 @@ function Profile() {
 
           </div>
 
+          {erroImpacto && (
+            <p className="tw:mt-3 tw:rounded-xl tw:bg-[#fff0ed] tw:p-3 tw:text-sm tw:text-[#b94b42]">
+              {erroImpacto}
+            </p>
+          )}
+
         </section>
 
+        {/* Jornada e progresso */}
         <section className="tw:mb-[25px] tw:rounded-2xl tw:bg-[#124638] tw:p-6 tw:text-white tw:max-[600px]:p-5">
 
           <div className="tw:flex tw:items-center tw:gap-3">
@@ -361,7 +511,11 @@ function Profile() {
               </h2>
 
               <p className="tw:mt-1 tw:text-[10px] tw:text-[#d1e4d8]">
-                Mais uma contribuição para desbloquear seu próximo nível.
+                {carregandoImpacto
+                  ? 'Calculando seu progresso...'
+                  : proximaMeta
+                    ? `Faltam ${faltamDoacoes} ${faltamDoacoes === 1 ? 'doação' : 'doações'} para o próximo nível.`
+                    : 'Você alcançou todas as conquistas disponíveis!'}
               </p>
             </div>
 
@@ -371,24 +525,29 @@ function Profile() {
 
             <div className="tw:mb-2 tw:flex tw:items-center tw:justify-between tw:text-[10px] tw:text-[#d1e4d8]">
               <span>Progresso para o próximo nível</span>
-              <strong>60%</strong>
+              <strong>
+                {carregandoImpacto ? '...' : `${Math.round(progresso)}%`}
+              </strong>
             </div>
 
             <div className="tw:h-[9px] tw:overflow-hidden tw:rounded-full tw:bg-white/20">
               <div
-                className="tw:h-full tw:rounded-full tw:bg-[#9DDAA5]"
-                style={{ width: `${progresso}%` }}
+                className="tw:h-full tw:rounded-full tw:bg-[#9DDAA5] tw:transition-all"
+                style={{
+                  width: `${carregandoImpacto ? 0 : progresso}%`
+                }}
               />
             </div>
 
           </div>
 
           <p className="tw:mt-3 tw:text-[10px] tw:font-semibold tw:text-[#d1e4d8]">
-            Nível 3 • Guardião dos alimentos
+            Nível {nivelAtual} • {nomesNiveis[nivelAtual]}
           </p>
 
         </section>
 
+        {/* Conquistas */}
         <section className="tw:mb-[25px]">
 
           <div className="tw:mb-4 tw:flex tw:items-center tw:justify-between">
@@ -425,7 +584,11 @@ function Profile() {
                   </h3>
 
                   <p className="tw:mt-1 tw:text-[10px] tw:text-[#929b93]">
-                    {conquista.status}
+                    {carregandoImpacto
+                      ? 'Carregando...'
+                      : conquista.desbloqueada
+                        ? 'Concluída'
+                        : `${conquista.meta} ${conquista.meta === 1 ? 'doação necessária' : 'doações necessárias'}`}
                   </p>
 
                 </article>
@@ -436,6 +599,7 @@ function Profile() {
 
         </section>
 
+        {/* Minha conta */}
         <section className="tw:rounded-2xl tw:border tw:border-[#e9ebe4] tw:bg-white tw:p-5">
 
           <h2 className="tw:mb-4 tw:text-[16px] tw:font-bold tw:text-[#244d39]">
@@ -494,6 +658,7 @@ function Profile() {
 
       </main>
 
+      {/* Modal de edição */}
       {editando && (
         <div className="tw:fixed tw:inset-0 tw:z-50 tw:flex tw:items-center tw:justify-center tw:bg-black/40 tw:px-4 tw:py-6">
 
