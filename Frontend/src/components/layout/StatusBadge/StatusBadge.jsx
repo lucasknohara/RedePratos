@@ -26,6 +26,10 @@ const statusConfig = {
   concluida: {
     nome: 'Concluída',
     classes: 'tw:bg-[#e5eee7] tw:text-[#376a47]'
+  },
+  cancelada: {
+  nome: 'Cancelada',
+  classes: 'tw:bg-[#eef0ed] tw:text-[#718076]'
   }
 }
 

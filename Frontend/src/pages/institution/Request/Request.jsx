@@ -27,7 +27,8 @@ const filtros = [
   { valor: 'aceita', label: 'Confirmadas' },
   { valor: 'recusada', label: 'Recusadas' },
   { valor: 'encerrada', label: 'Encerradas' },
-  { valor: 'concluida', label: 'Concluídas' }
+  { valor: 'concluida', label: 'Concluídas' },
+  { valor: 'cancelada', label: 'Canceladas' }
 ]
 
 const statusConfig = {
@@ -55,6 +56,11 @@ const statusConfig = {
     label: 'Concluída',
     descricao: 'A entrega foi confirmada pelo doador e pela instituição.',
     icone: CheckCircle2
+  },
+  cancelada: {
+  label: 'Cancelada',
+  descricao: 'Esta solicitação foi cancelada.',
+  icone: XCircle
   }
 }
 
