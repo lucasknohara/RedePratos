@@ -432,7 +432,12 @@ function Requests() {
             <div className="tw:flex tw:flex-col tw:gap-4">
 
               {solicitacoesFiltradas.map((solicitacao) => {
-                const status = statusConfig[solicitacao.status]
+                const status = statusConfig[solicitacao.status] || {
+                  label: 'Status não identificado',
+                  descricao: 'Não foi possível identificar o status desta solicitação.',
+                  icone: Clock3
+                }
+                
                 const IconeStatus = status.icone
 
                 return (
